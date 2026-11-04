@@ -140,3 +140,4 @@ doc/api/
 ### Custom Additions
 logs/
 dump/
+app_config.dart
