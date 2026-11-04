@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "624770085167",
+    "project_id": "bansigo-customer",
+    "storage_bucket": "bansigo-customer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624770085167:android:7792908b51e0a2cd3c71da",
+        "android_client_info": {
+          "package_name": "com.bansigo.bansigo_customer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "624770085167-vppn7l58p9d9os1dd5itk1etuo5hsa1m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTMy2Wp52zCq73dRPfaFkcyejpGxa48E4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "624770085167-vppn7l58p9d9os1dd5itk1etuo5hsa1m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
