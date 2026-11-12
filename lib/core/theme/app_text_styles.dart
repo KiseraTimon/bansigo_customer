@@ -42,9 +42,21 @@ class AppTextStyles {
         color: AppColors.textPrimary,
       );
 
+  static TextStyle get bodyMedium => GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textPrimary,
+      );
+
   static TextStyle get bodySemiBold => GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      );
+
+  static TextStyle get bodyBold => GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       );
 
