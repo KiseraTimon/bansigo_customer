@@ -1,7 +1,6 @@
 // lib/features/home/widgets/custom_bottom_nav.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -25,41 +24,43 @@ class CustomBottomNav extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 20,
+            blurRadius: 18,
             offset: const Offset(0, -4),
           ),
         ],
       ),
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
+        left: 20,
+        right: 20,
         top: 10,
         bottom: MediaQuery.of(context).padding.bottom > 0
-            ? MediaQuery.of(context).padding.bottom
-            : 14,
+            ? MediaQuery.of(context).padding.bottom + 2
+            : 12,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildNavItem(
+          // 0: Home
+          _buildStandardNavItem(
             index: 0,
-            icon: Icons.home_rounded,
+            icon: currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
             isActive: currentIndex == 0,
-            useCircleBackground: true,
           ),
-          _buildNavItem(
+          // 1: Explore / Departments
+          _buildStandardNavItem(
             index: 1,
-            icon: Icons.grid_view_rounded,
+            icon: currentIndex == 1 ? Icons.grid_view_rounded : Icons.grid_view_outlined,
             isActive: currentIndex == 1,
           ),
-          _buildNavItem(
+          // 2: Orders / Shopping Bag
+          _buildStandardNavItem(
             index: 2,
-            icon: Icons.shopping_bag_outlined,
+            icon: currentIndex == 2 ? Icons.shopping_bag_rounded : Icons.shopping_bag_outlined,
             isActive: currentIndex == 2,
           ),
-          _buildNavItem(
-            index: 3,
-            icon: Icons.menu_rounded,
+          // 3: More / Menu Button (Green Circle with white hamburger icon matching inspo)
+          _buildMoreCircularButton(
             isActive: currentIndex == 3,
           ),
         ],
@@ -67,43 +68,52 @@ class CustomBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem({
+  Widget _buildStandardNavItem({
     required int index,
     required IconData icon,
     required bool isActive,
-    bool useCircleBackground = false,
   }) {
-    if (useCircleBackground && isActive) {
-      return GestureDetector(
-        onTap: () => onIndexChanged(index),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 26,
-          ),
-        ),
-      );
-    }
-
-    return GestureDetector(
+    return InkWell(
       onTap: () => onIndexChanged(index),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 50,
-        height: 50,
-        alignment: Alignment.center,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Icon(
           icon,
-          color: isActive ? AppColors.primary : AppColors.slateDark,
+          color: isActive ? const Color(0xFF1E293B) : const Color(0xFF64748B),
           size: 26,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreCircularButton({
+    required bool isActive,
+  }) {
+    return InkWell(
+      onTap: () => onIndexChanged(3),
+      borderRadius: BorderRadius.circular(24),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF65B307) : const Color(0xFF70C007),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF65B307).withValues(alpha: isActive ? 0.45 : 0.25),
+              blurRadius: isActive ? 10 : 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.menu_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
       ),
     );
