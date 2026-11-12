@@ -1,4 +1,4 @@
-package com.example.bansigo_customer
+package com.bansigo.bansigo_customer
 
 import io.flutter.embedding.android.FlutterActivity
 
