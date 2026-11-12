@@ -18,4 +18,40 @@ class ApiEndpoints {
   static const String deleteMe = '/users/me';
   static const String emailVerification = '/users/me/email-verification';
   static const String emailVerificationConfirm = '/users/me/email-verification/confirm';
+
+  // Delivery & OSM routing endpoints (prefixed by /api/customer on FastAPI server)
+  static const String deliveryCoverage = '/customer/delivery/coverage';
+  static const String deliveryEstimate = '/customer/delivery/estimate';
+  static String deliveryTracking(int orderId) => '/customer/orders/$orderId/tracking';
+  static String handoverCode(int orderId) => '/customer/orders/$orderId/handover-code';
+
+  // Customer addresses & delivery zones (prefixed by /api/customer on FastAPI server)
+  static const String addresses = '/customer/addresses';
+  static String addressDetail(int id) => '/customer/addresses/$id';
+  static const String deliveryZones = '/customer/zones';
+
+  // Customer catalogue endpoints (prefixed by /api/customer on FastAPI server)
+  static const String categories = '/customer/categories';
+  static const String products = '/customer/products';
+  static String productDetail(int id) => '/customer/products/$id';
+  static String relatedProducts(int id) => '/customer/products/$id/related';
+
+  // Customer orders endpoints (prefixed by /api/customer on FastAPI server)
+  static const String orders = '/customer/orders';
+  static String orderDetail(int id) => '/customer/orders/$id';
+  static const String checkout = '/customer/orders/checkout';
+  static String cancelOrder(int id) => '/customer/orders/$id/cancel';
+  static String payOrderMpesa(int id) => '/customer/orders/$id/pay/mpesa';
+  static String payOrderManual(int id) => '/customer/orders/$id/pay/manual';
+  static String orderPaymentStatus(int id) => '/customer/orders/$id/payment-status';
+
+  // Customer notifications (prefixed by /api/customer on FastAPI server)
+  static const String notifications = '/customer/notifications';
+  static String notificationRead(String id) => '/customer/notifications/$id/read';
+  static const String notificationsReadAll = '/customer/notifications/read-all';
+
+  // Customer AI recommendations (Apriori & FP-Growth)
+  static const String recommendations = '/customer/recommendations';
+  static const String recommendationTrack = '/customer/recommendations/track';
+  static const String recommendationStats = '/customer/recommendations/stats';
 }
