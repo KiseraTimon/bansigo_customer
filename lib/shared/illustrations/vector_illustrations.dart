@@ -762,6 +762,119 @@ class _MeatFishPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// Category Vector Art: Fresh Produce & Poultry (Fruit, Vegetable & Chicken Drumstick)
+class FreshProduceIllustration extends StatelessWidget {
+  final double size;
+  const FreshProduceIllustration({super.key, this.size = 80});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _FreshProducePainter()),
+    );
+  }
+}
+
+class _FreshProducePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 100.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // 1. Roasted Poultry Drumstick (back right)
+    final bonePaint = Paint()..color = const Color(0xFFF1F5F9);
+    canvas.drawCircle(const Offset(78, 25), 4, bonePaint);
+    canvas.drawCircle(const Offset(84, 30), 4, bonePaint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(70, 24, 12, 7), const Radius.circular(3)),
+      bonePaint,
+    );
+
+    final meatPath = Path();
+    meatPath.moveTo(48, 52);
+    meatPath.cubicTo(45, 34, 60, 28, 72, 33);
+    meatPath.cubicTo(80, 38, 80, 56, 68, 64);
+    meatPath.cubicTo(56, 70, 50, 62, 48, 52);
+    meatPath.close();
+    canvas.drawPath(meatPath, Paint()..color = const Color(0xFFB45309));
+    canvas.drawCircle(const Offset(62, 45), 10, Paint()..color = const Color(0xFFD97706));
+
+    // 2. Carrot (middle vegetable)
+    final carrotLeafPath = Path();
+    carrotLeafPath.moveTo(34, 30);
+    carrotLeafPath.lineTo(26, 16);
+    carrotLeafPath.lineTo(32, 22);
+    carrotLeafPath.lineTo(38, 14);
+    carrotLeafPath.lineTo(36, 26);
+    canvas.drawPath(
+      carrotLeafPath,
+      Paint()
+        ..color = const Color(0xFF16A34A)
+        ..strokeWidth = 3
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+
+    final carrotPath = Path();
+    carrotPath.moveTo(27, 30);
+    carrotPath.quadraticBezierTo(38, 28, 43, 33);
+    carrotPath.lineTo(24, 82);
+    carrotPath.quadraticBezierTo(20, 82, 19, 78);
+    carrotPath.close();
+    canvas.drawPath(carrotPath, Paint()..color = const Color(0xFFEA580C));
+
+    // Carrot detail lines
+    final carrotLine = Paint()
+      ..color = const Color(0xFFC2410C)
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(25, 42), const Offset(33, 40), carrotLine);
+    canvas.drawLine(const Offset(24, 54), const Offset(30, 52), carrotLine);
+    canvas.drawLine(const Offset(22, 66), const Offset(27, 65), carrotLine);
+
+    // 3. Fresh Red Apple / Fruit (front left)
+    canvas.drawOval(
+      const Rect.fromLTWH(36, 48, 36, 36),
+      Paint()..color = const Color(0xFFDC2626),
+    );
+    canvas.drawOval(
+      const Rect.fromLTWH(50, 48, 30, 34),
+      Paint()..color = const Color(0xFFEF4444),
+    );
+    // Apple shine
+    canvas.drawOval(
+      const Rect.fromLTWH(42, 54, 8, 14),
+      Paint()..color = Colors.white.withValues(alpha: 0.35),
+    );
+    // Apple stem & leaf
+    final stemPath = Path();
+    stemPath.moveTo(56, 49);
+    stemPath.quadraticBezierTo(58, 41, 63, 38);
+    canvas.drawPath(
+      stemPath,
+      Paint()
+        ..color = const Color(0xFF78350F)
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+    final fruitLeaf = Path();
+    fruitLeaf.moveTo(60, 40);
+    fruitLeaf.quadraticBezierTo(68, 38, 70, 44);
+    fruitLeaf.quadraticBezierTo(64, 46, 60, 40);
+    fruitLeaf.close();
+    canvas.drawPath(fruitLeaf, Paint()..color = const Color(0xFF22C55E));
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 /// Category Vector Art: Snacks (Crispy potato chips bowl)
 class SnacksIllustration extends StatelessWidget {
   final double size;
@@ -892,6 +1005,765 @@ class _DairyPainter extends CustomPainter {
     );
 
     canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Illustration of a courier packing boxes for the Orders screen empty state
+class OrderPackingIllustration extends StatelessWidget {
+  final double size;
+  const OrderPackingIllustration({super.key, this.size = 240});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size * 1.1,
+      child: CustomPaint(
+        painter: _OrderPackingPainter(),
+      ),
+    );
+  }
+}
+
+class _OrderPackingPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 240.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // 1. Soft peach background blob
+    final blobPaint = Paint()..color = const Color(0xFFFFF4EC);
+    final blobPath = Path();
+    blobPath.moveTo(40, 100);
+    blobPath.quadraticBezierTo(20, 140, 60, 170);
+    blobPath.quadraticBezierTo(80, 200, 160, 190);
+    blobPath.quadraticBezierTo(200, 180, 210, 130);
+    blobPath.quadraticBezierTo(210, 80, 160, 85);
+    blobPath.quadraticBezierTo(90, 75, 40, 100);
+    blobPath.close();
+    canvas.drawPath(blobPath, blobPaint);
+
+    // 2. Ground shadow
+    final shadowPaint = Paint()..color = const Color(0xFFE8EEF3);
+    canvas.drawOval(const Rect.fromLTWH(18, 210, 204, 12), shadowPaint);
+
+    // 3. Courier Person standing
+    final pantsPaint = Paint()..color = const Color(0xFF263238);
+    final skinPaint = Paint()..color = const Color(0xFFFFDFCE);
+    final orangePaint = Paint()..color = const Color(0xFFF97316);
+    final darkHairPaint = Paint()..color = const Color(0xFF1E293B);
+
+    // Left leg
+    final leftLeg = Path();
+    leftLeg.moveTo(144, 128);
+    leftLeg.lineTo(154, 206);
+    leftLeg.lineTo(142, 206);
+    leftLeg.lineTo(138, 128);
+    leftLeg.close();
+    canvas.drawPath(leftLeg, pantsPaint);
+
+    // Right leg
+    final rightLeg = Path();
+    rightLeg.moveTo(154, 128);
+    rightLeg.lineTo(176, 202);
+    rightLeg.lineTo(168, 204);
+    rightLeg.lineTo(146, 128);
+    rightLeg.close();
+    canvas.drawPath(rightLeg, pantsPaint);
+
+    // Orange pant cuffs
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(139, 204, 14, 4), const Radius.circular(1.5)),
+      orangePaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(167, 201, 12, 4), const Radius.circular(1.5)),
+      orangePaint,
+    );
+
+    // Shoes
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(134, 208, 17, 7), const Radius.circular(3)),
+      darkHairPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(169, 204, 16, 7), const Radius.circular(3)),
+      darkHairPaint,
+    );
+
+    // Torso (Orange T-shirt)
+    final torsoPath = Path();
+    torsoPath.moveTo(133, 90);
+    torsoPath.lineTo(168, 90);
+    torsoPath.lineTo(160, 130);
+    torsoPath.lineTo(135, 130);
+    torsoPath.close();
+    canvas.drawPath(torsoPath, orangePaint);
+
+    // Right Arm reaching to box
+    canvas.save();
+    final rightArm = Path();
+    rightArm.moveTo(164, 92);
+    rightArm.lineTo(169, 108);
+    rightArm.lineTo(163, 114);
+    rightArm.lineTo(158, 94);
+    rightArm.close();
+    canvas.drawPath(rightArm, orangePaint);
+    // Forearm / hand
+    canvas.drawOval(const Rect.fromLTWH(162, 112, 9, 18), skinPaint);
+    canvas.restore();
+
+    // Left Arm reaching to box
+    final leftArm = Path();
+    leftArm.moveTo(136, 92);
+    leftArm.lineTo(108, 108);
+    leftArm.lineTo(112, 115);
+    leftArm.lineTo(140, 96);
+    leftArm.close();
+    canvas.drawPath(leftArm, orangePaint);
+    // Forearm & hand
+    final hand = Path();
+    hand.moveTo(108, 108);
+    hand.lineTo(92, 116);
+    hand.lineTo(95, 122);
+    hand.lineTo(112, 114);
+    hand.close();
+    canvas.drawPath(hand, skinPaint);
+
+    // Neck & Head
+    canvas.drawRect(const Rect.fromLTWH(145, 82, 7, 10), skinPaint);
+    canvas.drawOval(const Rect.fromLTWH(139, 70, 15, 17), skinPaint);
+    // Hair
+    final hairPath = Path();
+    hairPath.moveTo(137, 73);
+    hairPath.quadraticBezierTo(145, 65, 155, 71);
+    hairPath.lineTo(153, 80);
+    hairPath.lineTo(146, 78);
+    hairPath.lineTo(142, 82);
+    hairPath.close();
+    canvas.drawPath(hairPath, darkHairPaint);
+
+    // 4. Lower Open Cardboard Box on ground
+    final boxPaint = Paint()..color = const Color(0xFFE28738);
+    final boxDarkPaint = Paint()..color = const Color(0xFFC76F26);
+    final tapePaint = Paint()..color = const Color(0xFFFFD19A);
+
+    // Base body
+    final lowerBoxRRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(50, 142, 76, 72),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(lowerBoxRRect, boxPaint);
+
+    // Inside shadow of lower box
+    final insideBox = Path();
+    insideBox.moveTo(50, 142);
+    insideBox.lineTo(126, 142);
+    insideBox.lineTo(122, 146);
+    insideBox.lineTo(54, 146);
+    insideBox.close();
+    canvas.drawPath(insideBox, boxDarkPaint);
+
+    // Vertical packing tape strip
+    canvas.drawRect(const Rect.fromLTWH(62, 146, 8, 30), tapePaint);
+
+    // Left flap open
+    final leftFlap = Path();
+    leftFlap.moveTo(50, 142);
+    leftFlap.lineTo(44, 134);
+    leftFlap.lineTo(58, 134);
+    leftFlap.lineTo(60, 142);
+    leftFlap.close();
+    canvas.drawPath(leftFlap, boxDarkPaint);
+
+    // Right flap open
+    final rightFlap = Path();
+    rightFlap.moveTo(96, 142);
+    rightFlap.lineTo(98, 135);
+    rightFlap.lineTo(124, 135);
+    rightFlap.lineTo(126, 142);
+    rightFlap.close();
+    canvas.drawPath(rightFlap, boxDarkPaint);
+
+    // 5. Upper Tilted Cardboard Box being placed into lower box
+    canvas.save();
+    canvas.translate(62, 92);
+    canvas.rotate(-math.pi / 7);
+
+    final upperBoxRRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(0, 0, 58, 54),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(upperBoxRRect, Paint()..color = const Color(0xFFD67828));
+
+    // Upper box tape
+    canvas.drawRect(const Rect.fromLTWH(20, 24, 12, 12), tapePaint);
+
+    // Flap on upper box
+    final uFlap = Path();
+    uFlap.moveTo(0, 0);
+    uFlap.lineTo(-8, -12);
+    uFlap.lineTo(44, -12);
+    uFlap.lineTo(50, 0);
+    uFlap.close();
+    canvas.drawPath(uFlap, Paint()..color = const Color(0xFFBE6318));
+
+    canvas.restore();
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// High fidelity vector illustration of Milk Powder Pouch (Dano Power style)
+class MilkPowderPouchIllustration extends StatelessWidget {
+  final double size;
+  const MilkPowderPouchIllustration({super.key, this.size = 140});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _MilkPowderPouchPainter(),
+      ),
+    );
+  }
+}
+
+class _MilkPowderPouchPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 120.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // Pouch outline
+    final pouchPath = Path();
+    pouchPath.moveTo(25, 20);
+    pouchPath.lineTo(95, 20);
+    pouchPath.quadraticBezierTo(98, 60, 94, 102);
+    pouchPath.lineTo(26, 102);
+    pouchPath.quadraticBezierTo(22, 60, 25, 20);
+    pouchPath.close();
+
+    // White base pouch
+    canvas.drawPath(pouchPath, Paint()..color = const Color(0xFFF8FAFC));
+
+    // Top gold seal
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(24, 16, 72, 8), const Radius.circular(2)),
+      Paint()..color = const Color(0xFFEAB308),
+    );
+
+    // Red upper brand header
+    final redHeader = Path();
+    redHeader.moveTo(25, 24);
+    redHeader.lineTo(95, 24);
+    redHeader.lineTo(94, 62);
+    redHeader.quadraticBezierTo(60, 52, 26, 62);
+    redHeader.close();
+    canvas.drawPath(redHeader, Paint()..color = const Color(0xFFDC2626));
+
+    // DANO brand text
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: 'DANO',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 14,
+          letterSpacing: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, const Offset(36, 28));
+
+    final subPainter = TextPainter(
+      text: const TextSpan(
+        text: 'POWER',
+        style: TextStyle(
+          color: Color(0xFFFEF08A),
+          fontWeight: FontWeight.w800,
+          fontSize: 8,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    subPainter.paint(canvas, const Offset(43, 44));
+
+    // Milk splash graphic
+    final splashPath = Path();
+    splashPath.moveTo(35, 65);
+    splashPath.quadraticBezierTo(42, 54, 48, 62);
+    splashPath.quadraticBezierTo(60, 50, 72, 63);
+    splashPath.quadraticBezierTo(78, 56, 85, 66);
+    splashPath.lineTo(84, 82);
+    splashPath.lineTo(36, 82);
+    splashPath.close();
+    canvas.drawPath(splashPath, Paint()..color = Colors.white);
+
+    // Green bottom grass band
+    final greenBand = Path();
+    greenBand.moveTo(26, 84);
+    greenBand.lineTo(94, 84);
+    greenBand.lineTo(94, 102);
+    greenBand.lineTo(26, 102);
+    greenBand.close();
+    canvas.drawPath(greenBand, Paint()..color = const Color(0xFF65A30D));
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// High fidelity vector illustration of Milk Powder Can (Nestle Nido style)
+class MilkPowderCanIllustration extends StatelessWidget {
+  final double size;
+  const MilkPowderCanIllustration({super.key, this.size = 140});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _MilkPowderCanPainter(),
+      ),
+    );
+  }
+}
+
+class _MilkPowderCanPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 120.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // Can body (Bright Yellow Nido cylinder)
+    final canRRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(26, 22, 68, 80),
+      const Radius.circular(8),
+    );
+    canvas.drawRRect(canRRect, Paint()..color = const Color(0xFFFBBF24));
+
+    // Metallic silver top rim
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(24, 18, 72, 7), const Radius.circular(3.5)),
+      Paint()..color = const Color(0xFFCBD5E1),
+    );
+
+    // Red diagonal brand banner
+    final redRibbon = Path();
+    redRibbon.moveTo(26, 38);
+    redRibbon.lineTo(94, 38);
+    redRibbon.lineTo(94, 60);
+    redRibbon.lineTo(26, 60);
+    redRibbon.close();
+    canvas.drawPath(redRibbon, Paint()..color = const Color(0xFFB91C1C));
+
+    // NIDO text
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: 'NIDO',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 15,
+          letterSpacing: 1.2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, const Offset(38, 41));
+
+    // Glass of milk splash on lower half
+    final glassPath = Path();
+    glassPath.moveTo(42, 68);
+    glassPath.lineTo(78, 68);
+    glassPath.lineTo(74, 92);
+    glassPath.lineTo(46, 92);
+    glassPath.close();
+    canvas.drawPath(glassPath, Paint()..color = Colors.white);
+
+    // Silver bottom rim
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(25, 99, 70, 5), const Radius.circular(2.5)),
+      Paint()..color = const Color(0xFF94A3B8),
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Spices illustration (terracotta mortar, pestle, red chili & turmeric powder)
+class SpicesIllustration extends StatelessWidget {
+  final double size;
+  const SpicesIllustration({super.key, this.size = 80});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _SpicesPainter()),
+    );
+  }
+}
+
+class _SpicesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 100.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // 1. Red Chili Pepper in background
+    final chiliPath = Path();
+    chiliPath.moveTo(56, 32);
+    chiliPath.quadraticBezierTo(78, 20, 84, 40);
+    chiliPath.quadraticBezierTo(88, 56, 72, 65);
+    chiliPath.quadraticBezierTo(78, 48, 70, 42);
+    chiliPath.quadraticBezierTo(62, 36, 56, 32);
+    chiliPath.close();
+    canvas.drawPath(chiliPath, Paint()..color = const Color(0xFFDC2626));
+
+    // Chili stem
+    final stemPath = Path();
+    stemPath.moveTo(56, 32);
+    stemPath.quadraticBezierTo(50, 26, 44, 28);
+    canvas.drawPath(
+      stemPath,
+      Paint()
+        ..color = const Color(0xFF15803D)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // 2. Mortar Bowl
+    final mortarPath = Path();
+    mortarPath.moveTo(22, 54);
+    mortarPath.lineTo(78, 54);
+    mortarPath.quadraticBezierTo(76, 84, 50, 84);
+    mortarPath.quadraticBezierTo(24, 84, 22, 54);
+    mortarPath.close();
+    canvas.drawPath(mortarPath, Paint()..color = const Color(0xFFD97706));
+
+    // Mortar rim
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(18, 50, 64, 8), const Radius.circular(4)),
+      Paint()..color = const Color(0xFFB45309),
+    );
+
+    // 3. Pestle leaning left
+    canvas.save();
+    canvas.translate(34, 30);
+    canvas.rotate(-math.pi / 7);
+    final pestleRRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(0, 0, 10, 44),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(pestleRRect, Paint()..color = const Color(0xFF92400E));
+    canvas.restore();
+
+    // 4. Ground golden saffron / turmeric powder in mortar
+    canvas.drawOval(
+      const Rect.fromLTWH(26, 55, 48, 12),
+      Paint()..color = const Color(0xFFFBBF24),
+    );
+
+    // Spice specks
+    final speckPaint = Paint()..color = const Color(0xFFB91C1C);
+    canvas.drawCircle(const Offset(42, 60), 1.5, speckPaint);
+    canvas.drawCircle(const Offset(52, 58), 1.8, speckPaint);
+    canvas.drawCircle(const Offset(60, 62), 1.4, speckPaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Ice Creams & More illustration (waffle cone, scoops & cherry)
+class IceCreamIllustration extends StatelessWidget {
+  final double size;
+  const IceCreamIllustration({super.key, this.size = 80});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _IceCreamPainter()),
+    );
+  }
+}
+
+class _IceCreamPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 100.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // 1. Waffle Cone
+    final conePath = Path();
+    conePath.moveTo(35, 52);
+    conePath.lineTo(65, 52);
+    conePath.lineTo(50, 88);
+    conePath.close();
+    canvas.drawPath(conePath, Paint()..color = const Color(0xFFF59E0B));
+
+    // Cone crosshatch lines
+    final linePaint = Paint()
+      ..color = const Color(0xFFD97706)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawLine(const Offset(40, 56), const Offset(55, 75), linePaint);
+    canvas.drawLine(const Offset(45, 54), const Offset(52, 82), linePaint);
+    canvas.drawLine(const Offset(60, 56), const Offset(45, 75), linePaint);
+    canvas.drawLine(const Offset(55, 54), const Offset(48, 82), linePaint);
+
+    // 2. Bottom vanilla / mint scoop
+    canvas.drawCircle(const Offset(50, 48), 18, Paint()..color = const Color(0xFFFEF08A));
+
+    // 3. Top strawberry scoop
+    canvas.drawCircle(const Offset(50, 32), 16, Paint()..color = const Color(0xFFFB7185));
+
+    // Chocolate syrup drips
+    final dripPath = Path();
+    dripPath.moveTo(38, 30);
+    dripPath.quadraticBezierTo(44, 40, 46, 32);
+    dripPath.quadraticBezierTo(50, 42, 54, 32);
+    dripPath.quadraticBezierTo(58, 38, 62, 30);
+    dripPath.quadraticBezierTo(50, 20, 38, 30);
+    dripPath.close();
+    canvas.drawPath(dripPath, Paint()..color = const Color(0xFF78350F));
+
+    // 4. Cherry on top
+    canvas.drawCircle(const Offset(50, 16), 6.5, Paint()..color = const Color(0xFFE11D48));
+    final cherryStem = Path();
+    cherryStem.moveTo(50, 12);
+    cherryStem.quadraticBezierTo(56, 4, 62, 8);
+    canvas.drawPath(
+      cherryStem,
+      Paint()
+        ..color = const Color(0xFF15803D)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..strokeCap = StrokeCap.round,
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Honey Pot illustration for Spotlight section
+class HoneyPotIllustration extends StatelessWidget {
+  final double size;
+  const HoneyPotIllustration({super.key, this.size = 80});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _HoneyPotPainter()),
+    );
+  }
+}
+
+class _HoneyPotPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 100.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    // Honey Pot Jar Body
+    final jarPath = Path();
+    jarPath.moveTo(30, 40);
+    jarPath.lineTo(70, 40);
+    jarPath.lineTo(76, 56);
+    jarPath.quadraticBezierTo(78, 80, 50, 80);
+    jarPath.quadraticBezierTo(22, 80, 24, 56);
+    jarPath.close();
+    canvas.drawPath(jarPath, Paint()..color = const Color(0xFFFBBF24));
+
+    // Honey shading
+    final liquidPath = Path();
+    liquidPath.moveTo(28, 48);
+    liquidPath.lineTo(72, 48);
+    liquidPath.lineTo(75, 58);
+    liquidPath.quadraticBezierTo(77, 78, 50, 78);
+    liquidPath.quadraticBezierTo(23, 78, 25, 58);
+    liquidPath.close();
+    canvas.drawPath(liquidPath, Paint()..color = const Color(0xFFF59E0B));
+
+    // Jar Rim & Cloth Top
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(26, 34, 48, 10), const Radius.circular(5)),
+      Paint()..color = const Color(0xFFD97706),
+    );
+    // Lid cloth tied with cord
+    final lidPath = Path();
+    lidPath.moveTo(22, 34);
+    lidPath.quadraticBezierTo(50, 24, 78, 34);
+    lidPath.lineTo(74, 38);
+    lidPath.lineTo(26, 38);
+    lidPath.close();
+    canvas.drawPath(lidPath, Paint()..color = const Color(0xFFFEF3C7));
+
+    // Label on Jar
+    final labelRRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(34, 54, 32, 16),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(labelRRect, Paint()..color = Colors.white);
+    // Honey bee icon on label
+    canvas.drawCircle(const Offset(50, 62), 4, Paint()..color = const Color(0xFFD97706));
+
+    // Honey Dipper
+    canvas.save();
+    canvas.translate(72, 28);
+    canvas.rotate(math.pi / 6);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-3, 0, 6, 42), const Radius.circular(3)),
+      Paint()..color = const Color(0xFF92400E),
+    );
+    // Dipper head rings
+    canvas.drawOval(const Rect.fromLTWH(-6, 26, 12, 6), Paint()..color = const Color(0xFFB45309));
+    canvas.drawOval(const Rect.fromLTWH(-7, 31, 14, 6), Paint()..color = const Color(0xFFB45309));
+    canvas.drawOval(const Rect.fromLTWH(-6, 36, 12, 6), Paint()..color = const Color(0xFFB45309));
+    // Drip
+    canvas.drawCircle(const Offset(0, 46), 2.5, Paint()..color = const Color(0xFFF59E0B));
+    canvas.restore();
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class EmptySearchIllustration extends StatelessWidget {
+  final double size;
+
+  const EmptySearchIllustration({super.key, this.size = 140});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _EmptySearchPainter(),
+      ),
+    );
+  }
+}
+
+class _EmptySearchPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.45, size.height * 0.45);
+    final radius = size.width * 0.32;
+
+    // Ambient glow circle
+    final glowPaint = Paint()
+      ..color = const Color(0xFFF1F5F9)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius * 1.25, glowPaint);
+
+    final softCircle = Paint()
+      ..color = const Color(0xFFE2E8F0)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, softCircle);
+
+    // Magnifying glass lens
+    final lensBg = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius * 0.75, lensBg);
+
+    // Magnifying glass rim
+    final rimPaint = Paint()
+      ..color = const Color(0xFF16A34A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius * 0.75, rimPaint);
+
+    // Glass reflection
+    final reflectPaint = Paint()
+      ..color = const Color(0xFFDCFCE7).withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+    final reflectPath = Path()
+      ..addArc(
+        Rect.fromCircle(center: center, radius: radius * 0.65),
+        -1.2,
+        1.2,
+      );
+    canvas.drawPath(reflectPath, reflectPaint);
+
+    // Empty basket outline inside lens
+    final basketPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final basketPath = Path()
+      ..moveTo(center.dx - radius * 0.4, center.dy - radius * 0.1)
+      ..lineTo(center.dx - radius * 0.3, center.dy + radius * 0.3)
+      ..lineTo(center.dx + radius * 0.3, center.dy + radius * 0.3)
+      ..lineTo(center.dx + radius * 0.4, center.dy - radius * 0.1)
+      ..close();
+    canvas.drawPath(basketPath, basketPaint);
+
+    // Basket handle
+    final handlePath = Path()
+      ..moveTo(center.dx - radius * 0.25, center.dy - radius * 0.1)
+      ..quadraticBezierTo(center.dx, center.dy - radius * 0.45, center.dx + radius * 0.25, center.dy - radius * 0.1);
+    canvas.drawPath(handlePath, basketPaint);
+
+    // Magnifying glass handle
+    final handlePaint = Paint()
+      ..color = const Color(0xFF15803D)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7.0
+      ..strokeCap = StrokeCap.round;
+
+    final startHandle = Offset(center.dx + radius * 0.55, center.dy + radius * 0.55);
+    final endHandle = Offset(size.width * 0.88, size.height * 0.88);
+    canvas.drawLine(startHandle, endHandle, handlePaint);
+
+    // Floating sparkle
+    final sparklePaint = Paint()
+      ..color = const Color(0xFFF59E0B)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(size.width * 0.78, size.height * 0.25), 4, sparklePaint);
+    canvas.drawCircle(Offset(size.width * 0.18, size.height * 0.65), 3, sparklePaint);
   }
 
   @override
