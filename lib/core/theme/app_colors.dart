@@ -11,6 +11,7 @@ class AppColors {
 
   // Deep Slate / Dark Text
   static const Color slateDark = Color(0xFF1E2530);
+  static const Color slateMedium = Color(0xFF64748B);
   static const Color textPrimary = Color(0xFF1F2937);
   static const Color textSecondary = Color(0xFF6B7280);
   static const Color textMuted = Color(0xFF9CA3AF);
