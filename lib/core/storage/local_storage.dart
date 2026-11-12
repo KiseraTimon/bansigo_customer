@@ -9,6 +9,10 @@ class LocalStorage {
   static const String _keyOnboardingSeen = 'onboarding_seen';
   static const String _keySelectedLocation = 'selected_location';
   static const String _keyCustomApiUrl = 'custom_api_url';
+  static const String _keyWishlist = 'customer_wishlist';
+  static const String _keyCart = 'customer_cart';
+  static const String _keyCartSessions = 'all_cart_sessions';
+  static const String _keyActiveCartId = 'active_cart_id';
 
   // Settings keys
   static const String _keyOrderNotifications = 'setting_order_notifications';
@@ -18,6 +22,8 @@ class LocalStorage {
   static const String _keyLanguage = 'setting_language';
 
   final SharedPreferences _prefs;
+
+  SharedPreferences get prefs => _prefs;
 
   LocalStorage(this._prefs);
 
@@ -40,6 +46,13 @@ class LocalStorage {
     await _prefs.remove(_keyAccessToken);
     await _prefs.remove(_keyTokenType);
     await _prefs.remove(_keyCachedUser);
+    await clearUserAddressData();
+  }
+
+  /// Clears persisted address and location data to prevent address leaks between accounts
+  Future<void> clearUserAddressData() async {
+    await _prefs.remove(_keySelectedLocation);
+    await _prefs.remove('cached_customer_addresses');
   }
 
   // Cached User JSON
@@ -55,9 +68,9 @@ class LocalStorage {
     await _prefs.setBool(_keyOnboardingSeen, seen);
   }
 
-  // Selected Location (Default: Wasweta 1, Migori, CF38 1HR)
+  // Selected Location (Default: Migori Town, Migori)
   String getSelectedLocation() =>
-      _prefs.getString(_keySelectedLocation) ?? 'Wasweta 1, Migori, CF38 1HR';
+      _prefs.getString(_keySelectedLocation) ?? 'Migori Town, Migori';
 
   Future<void> setSelectedLocation(String location) async {
     await _prefs.setString(_keySelectedLocation, location);
@@ -72,6 +85,22 @@ class LocalStorage {
       await _prefs.setString(_keyCustomApiUrl, url.trim());
     }
   }
+
+  // Wishlist Storage
+  String? getWishlistJson() => _prefs.getString(_keyWishlist);
+  Future<void> saveWishlistJson(String json) => _prefs.setString(_keyWishlist, json);
+
+  String? getCartJson() => _prefs.getString(_keyCart);
+  Future<void> saveCartJson(String json) => _prefs.setString(_keyCart, json);
+  Future<void> clearCart() => _prefs.remove(_keyCart);
+
+  // Multi-cart sessions storage
+  String? getCartSessionsJson() => _prefs.getString(_keyCartSessions);
+  Future<void> saveCartSessionsJson(String json) => _prefs.setString(_keyCartSessions, json);
+  Future<void> clearCartSessions() => _prefs.remove(_keyCartSessions);
+
+  String? getActiveCartId() => _prefs.getString(_keyActiveCartId);
+  Future<void> setActiveCartId(String id) => _prefs.setString(_keyActiveCartId, id);
 
   // Settings getters & setters
   bool get orderNotifications => _prefs.getBool(_keyOrderNotifications) ?? true;
