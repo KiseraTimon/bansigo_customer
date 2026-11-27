@@ -518,6 +518,28 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // --- Session Validation & Expiry ---
+  Future<void> validateSession() async {
+    if (!isAuthenticated) return;
+    try {
+      _currentUser = await _authService.getProfile();
+      notifyListeners();
+    } catch (e) {
+      AppLogger.w('Startup session check failed: $e');
+    }
+  }
+
+  Future<void> handleSessionExpired() async {
+    if (!isAuthenticated && _currentUser == null) return;
+    AppLogger.w('Session expired (401); clearing stale credentials');
+    await _authService.logout();
+    _currentUser = null;
+    if (onLogoutCallback != null) {
+      await onLogoutCallback!();
+    }
+    notifyListeners();
+  }
+
   // --- Logout ---
   Future<void> logout() async {
     try {

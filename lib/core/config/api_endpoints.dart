@@ -49,9 +49,22 @@ class ApiEndpoints {
   static const String notifications = '/customer/notifications';
   static String notificationRead(String id) => '/customer/notifications/$id/read';
   static const String notificationsReadAll = '/customer/notifications/read-all';
+  static String notificationDelete(String id) => '/customer/notifications/$id';
+  static const String notificationsClearRead = '/customer/notifications?read_only=true';
 
   // Customer AI recommendations (Apriori & FP-Growth)
   static const String recommendations = '/customer/recommendations';
   static const String recommendationTrack = '/customer/recommendations/track';
   static const String recommendationStats = '/customer/recommendations/stats';
+
+  // Customer Wishlist
+  static const String wishlist = '/customer/wishlist';
+  static const String wishlistSync = '/customer/wishlist/sync';
+  static String wishlistItem(int productId) => '/customer/wishlist/$productId';
+
+  // Customer Product & Delivery Reviews
+  static const String reviews = '/customer/reviews';
+  static const String myReviews = '/customer/reviews/mine';
+  static String productReviews(int productId) => '/customer/products/$productId/reviews';
+  static String orderReviews(int orderId) => '/customer/orders/$orderId/reviews';
 }

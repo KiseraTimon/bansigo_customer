@@ -12,8 +12,9 @@ import 'api_exceptions.dart';
 class ApiClient {
   final http.Client _httpClient;
   final LocalStorage _storage;
+  void Function()? onUnauthorized;
 
-  ApiClient({http.Client? httpClient, required LocalStorage storage})
+  ApiClient({http.Client? httpClient, required LocalStorage storage, this.onUnauthorized})
       : _httpClient = httpClient ?? http.Client(),
         _storage = storage;
 
@@ -200,6 +201,7 @@ class ApiClient {
 
     switch (response.statusCode) {
       case 401:
+        onUnauthorized?.call();
         throw UnauthorizedException(errorMessage);
       case 403:
         throw ForbiddenException(errorMessage);
