@@ -10,6 +10,7 @@ import '../../../catalogue/screens/product_details_screen.dart';
 import '../../../recommendations/providers/recommendation_provider.dart';
 import '../../widgets/product_card.dart';
 
+import '../../../../shared/widgets/app_toast.dart';
 class RecommendationsSection extends StatelessWidget {
   const RecommendationsSection({super.key});
 
@@ -145,13 +146,7 @@ class RecommendationsSection extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             provider.trackFeedback(item, true, rating: 5, context: 'home');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Thanks for the recommendation feedback! 👍'),
-                                duration: Duration(seconds: 1),
-                                backgroundColor: AppColors.primaryDark,
-                              ),
-                            );
+                            AppToast.show(context, 'Thanks for the recommendation feedback! 👍', type: AppToastType.success, duration: Duration(seconds: 1));
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

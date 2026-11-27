@@ -90,8 +90,9 @@ class ProductInfoSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  product.description ??
-                      'Et quidem faciunt, ut summum bonum sit extremum et rationibus conquisitis de voluptate. Sed ut summum bonum sit id,',
+                  (product.description != null && product.description!.trim().isNotEmpty)
+                      ? product.description!
+                      : 'Fresh ${product.category.toLowerCase()} stocked daily at Bansi Mega Supermarket, Migori.',
                   style: AppTextStyles.caption.copyWith(
                     color: const Color(0xFF475569),
                     fontSize: 13.5,

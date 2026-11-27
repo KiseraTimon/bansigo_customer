@@ -17,6 +17,7 @@ import '../../providers/auth_provider.dart';
 import '../password_reset/password_reset_flow_screen.dart';
 import '../register/register_flow_screen.dart';
 
+import '../../../../shared/widgets/app_toast.dart';
 class LoginFlowScreen extends StatefulWidget {
   const LoginFlowScreen({super.key});
 
@@ -84,12 +85,7 @@ class _LoginFlowScreenState extends State<LoginFlowScreen> {
         );
       }
     } else if (result.errorMessage != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.errorMessage!),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, result.errorMessage!, type: AppToastType.error);
     }
   }
 

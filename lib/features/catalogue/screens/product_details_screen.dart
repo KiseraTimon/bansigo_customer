@@ -14,6 +14,7 @@ import 'sections/product_gallery_section.dart';
 import 'sections/product_info_section.dart';
 import 'sections/related_products_section.dart';
 import 'sections/add_to_bag_bar.dart';
+import '../../reviews/widgets/product_reviews_section.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -115,7 +116,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ProductGallerySection(product: _product),
                 const SizedBox(height: 24),
                 ProductInfoSection(product: _product),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                ProductReviewsSection(
+                  productId: int.tryParse(_product.id),
+                  productName: _product.name,
+                ),
+                const SizedBox(height: 28),
                 RelatedProductsSection(items: _relatedProducts),
               ],
             ),

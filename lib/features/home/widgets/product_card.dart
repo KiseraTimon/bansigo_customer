@@ -1,9 +1,11 @@
 // lib/features/home/widgets/product_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/product_image_widget.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 import '../models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
@@ -26,6 +28,9 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final wishlist = context.watch<WishlistProvider?>();
+    final isWishlisted = wishlist?.isWishlisted(product.id) ?? false;
+
     return Container(
       width: 148,
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -50,7 +55,7 @@ class ProductCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(9),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -58,12 +63,12 @@ class ProductCard extends StatelessWidget {
                 Stack(
                   children: [
                     SizedBox(
-                      height: 78,
+                      height: 70,
                       width: double.infinity,
                       child: ProductImageWidget(
                         product: product,
                         width: double.infinity,
-                        height: 78,
+                        height: 70,
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -117,22 +122,50 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (wishlist != null)
+                      Positioned(
+                        top: recommendationTag != null ? null : 4,
+                        bottom: recommendationTag != null ? 4 : null,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => wishlist.toggle(product),
+                          child: Container(
+                            width: 26,
+                            height: 26,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 15,
+                              color: isWishlisted ? const Color(0xFFEF4444) : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
 
                 // Unit / Volume
                 Text(
                   product.unit,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 10.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
 
                 // Name
                 Text(

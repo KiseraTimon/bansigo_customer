@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class LocationSelector extends StatelessWidget {
   final String location;
   final String supermarketDistanceNote;
@@ -22,12 +23,7 @@ class LocationSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap ?? () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Delivery address: $location\n$supermarketDistanceNote'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AppToast.show(context, 'Delivery address: $location\n$supermarketDistanceNote', type: AppToastType.info, duration: const Duration(seconds: 2));
       },
       borderRadius: BorderRadius.circular(16),
       child: Padding(

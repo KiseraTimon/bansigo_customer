@@ -13,6 +13,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login/login_flow_screen.dart';
 import '../../auth/screens/verification/email_verification_screen.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -107,7 +108,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     isLoading: auth.isLoading,
                     onPressed: () async {
                       if (formKey.currentState?.validate() ?? false) {
-                        final messenger = ScaffoldMessenger.of(context);
                         final nav = Navigator.of(sheetContext);
                         final rawPhone = phoneController.text.trim();
                         final normalisedPhone = Validators.normalisePhone(rawPhone) ?? rawPhone;
@@ -119,13 +119,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                         if (!mounted) return;
                         nav.pop();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success ? 'Profile updated successfully!' : (auth.errorMessage ?? 'Update failed'),
-                            ),
-                            backgroundColor: success ? AppColors.primaryDark : AppColors.error,
-                          ),
+                        AppToast.show(
+                          context,
+                          success ? 'Profile updated successfully!' : (auth.errorMessage ?? 'Update failed'),
+                          type: success ? AppToastType.success : AppToastType.error,
                         );
                       }
                     },
@@ -217,7 +214,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     isLoading: auth.isLoading,
                     onPressed: () async {
                       if (formKey.currentState?.validate() ?? false) {
-                        final messenger = ScaffoldMessenger.of(context);
                         final nav = Navigator.of(sheetContext);
                         final success = await auth.changePassword(
                           currentPassword: currentPasswordController.text,
@@ -226,13 +222,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                         if (!mounted) return;
                         nav.pop();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success ? 'Password updated successfully!' : (auth.errorMessage ?? 'Password change failed'),
-                            ),
-                            backgroundColor: success ? AppColors.primaryDark : AppColors.error,
-                          ),
+                        AppToast.show(
+                          context,
+                          success ? 'Password updated successfully!' : (auth.errorMessage ?? 'Password change failed'),
+                          type: success ? AppToastType.success : AppToastType.error,
                         );
                       }
                     },
@@ -479,12 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: auth.orderNotifications,
                       onChanged: (val) {
                         auth.setOrderNotifications(val);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Order alerts ${val ? "enabled" : "disabled"}'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        AppToast.show(context, 'Order alerts ${val ? "enabled" : "disabled"}', type: AppToastType.info, duration: const Duration(seconds: 1));
                       },
                     ),
                     const Divider(height: 1, indent: 56),
@@ -496,12 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: auth.promoNotifications,
                       onChanged: (val) {
                         auth.setPromoNotifications(val);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Promotional alerts ${val ? "enabled" : "disabled"}'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        AppToast.show(context, 'Promotional alerts ${val ? "enabled" : "disabled"}', type: AppToastType.info, duration: const Duration(seconds: 1));
                       },
                     ),
                     const Divider(height: 1, indent: 56),
@@ -513,12 +496,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       value: auth.smsAlerts,
                       onChanged: (val) {
                         auth.setSmsAlerts(val);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('SMS alerts ${val ? "enabled" : "disabled"}'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        AppToast.show(context, 'SMS alerts ${val ? "enabled" : "disabled"}', type: AppToastType.info, duration: const Duration(seconds: 1));
                       },
                     ),
                     const Divider(height: 1, indent: 56),

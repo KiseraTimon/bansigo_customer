@@ -62,11 +62,11 @@ class MoreOptionsScreen extends StatelessWidget {
     final displayName = user != null
         ? (user.fullName.trim().isNotEmpty
             ? user.fullName
-            : (user.email.isNotEmpty ? user.email.split('@').first : 'Tommy Omolo'))
-        : 'Tommy Omolo';
+            : (user.email.isNotEmpty ? user.email.split('@').first : 'BansiGo Shopper'))
+        : 'BansiGo Shopper';
     final displayPhone = user != null
         ? (user.phone.trim().isNotEmpty ? user.phone : 'No phone added')
-        : '07XXXXXX24';
+        : 'Sign in to sync orders & addresses';
 
     return Scaffold(
       backgroundColor: Colors.white,
