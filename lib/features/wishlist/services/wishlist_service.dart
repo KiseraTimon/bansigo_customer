@@ -1,81 +1,116 @@
 // lib/features/wishlist/services/wishlist_service.dart
 
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import '../../../core/config/api_endpoints.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../home/models/product_model.dart';
-import '../../../shared/illustrations/vector_illustrations.dart';
 
 class WishlistService {
   final LocalStorage _storage;
+  final ApiClient? _apiClient;
 
-  WishlistService(this._storage);
+  WishlistService(this._storage, {ApiClient? apiClient}) : _apiClient = apiClient;
 
-  static List<ProductModel> get defaultWishlistSeed => [
-        const ProductModel(
-          id: 'seed-nido-1',
-          name: 'Nestle Nido Full Cream Milk Powder Instant',
-          unit: '400g',
-          price: 270.00,
-          originalPrice: 342.00,
-          category: 'Dairy Products',
-          description:
-              'Et quidem faciunt, ut summum bonum sit extremum et rationibus conquisitis de voluptate. Sed ut summum bonum sit id,',
-          illustration: MilkPowderCanIllustration(size: 80),
-        ),
-        const ProductModel(
-          id: 'seed-dano-2',
-          name: 'Nestle Nido Full Cream Milk Powder Instant',
-          unit: '1 KG',
-          price: 270.00,
-          originalPrice: 342.00,
-          category: 'Dairy Products',
-          description:
-              'Et quidem faciunt, ut summum bonum sit extremum et rationibus conquisitis de voluptate. Sed ut summum bonum sit id,',
-          illustration: MilkPowderPouchIllustration(size: 80),
-        ),
-      ];
+  bool get hasRemoteClient => _apiClient != null;
 
   List<ProductModel> loadWishlist() {
     final rawJson = _storage.getWishlistJson();
     if (rawJson == null || rawJson.trim().isEmpty) {
-      return defaultWishlistSeed;
+      return [];
     }
     try {
-      final List decoded = jsonDecode(rawJson);
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! List) return [];
       final List<ProductModel> list = [];
       for (final item in decoded) {
         if (item is Map<String, dynamic>) {
-          final p = ProductModel.fromJson(item);
-          // Restore illustrations for matching names
-          Widget? ill;
-          if (p.name.contains('Nido')) {
-            ill = const MilkPowderCanIllustration(size: 80);
-          } else if (p.name.contains('DANO') || p.name.contains('Dano')) {
-            ill = const MilkPowderPouchIllustration(size: 80);
-          }
-          list.add(ProductModel(
-            id: p.id,
-            name: p.name,
-            unit: p.unit,
-            price: p.price,
-            originalPrice: p.originalPrice,
-            discountPercentage: p.discountPercentage,
-            category: p.category,
-            description: p.description,
-            imageUrl: p.imageUrl,
-            illustration: ill,
-          ));
+          list.add(ProductModel.fromJson(item));
+        } else if (item is Map) {
+          list.add(ProductModel.fromJson(Map<String, dynamic>.from(item)));
         }
       }
-      return list.isNotEmpty ? list : defaultWishlistSeed;
+      return list;
     } catch (_) {
-      return defaultWishlistSeed;
+      return [];
     }
   }
 
   Future<void> saveWishlist(List<ProductModel> items) async {
     final encoded = jsonEncode(items.map((e) => e.toJson()).toList());
     await _storage.saveWishlistJson(encoded);
+  }
+
+  Future<void> clearLocalWishlist() async {
+    await _storage.saveWishlistJson('[]');
+  }
+
+  List<ProductModel> _parseProductList(dynamic response) {
+    if (response is! List) return [];
+    final List<ProductModel> result = [];
+    for (final raw in response) {
+      if (raw is Map<String, dynamic>) {
+        result.add(ProductModel.fromJson(raw));
+      } else if (raw is Map) {
+        result.add(ProductModel.fromJson(Map<String, dynamic>.from(raw)));
+      }
+    }
+    return result;
+  }
+
+  Future<List<ProductModel>?> fetchRemoteWishlist() async {
+    if (_apiClient == null) return null;
+    try {
+      final res = await _apiClient.get(ApiEndpoints.wishlist);
+      final parsed = _parseProductList(res);
+      await saveWishlist(parsed);
+      return parsed;
+    } catch (e) {
+      AppLogger.w('Failed to fetch remote wishlist: $e');
+      return null;
+    }
+  }
+
+  Future<List<ProductModel>?> addToRemote(int productId) async {
+    if (_apiClient == null) return null;
+    try {
+      final res = await _apiClient.postJson(ApiEndpoints.wishlistItem(productId), {});
+      final parsed = _parseProductList(res);
+      await saveWishlist(parsed);
+      return parsed;
+    } catch (e) {
+      AppLogger.w('Failed to add product $productId to remote wishlist: $e');
+      return null;
+    }
+  }
+
+  Future<List<ProductModel>?> removeFromRemote(int productId) async {
+    if (_apiClient == null) return null;
+    try {
+      final res = await _apiClient.delete(ApiEndpoints.wishlistItem(productId));
+      final parsed = _parseProductList(res);
+      await saveWishlist(parsed);
+      return parsed;
+    } catch (e) {
+      AppLogger.w('Failed to remove product $productId from remote wishlist: $e');
+      return null;
+    }
+  }
+
+  Future<List<ProductModel>?> syncRemote(List<int> productIds) async {
+    if (_apiClient == null) return null;
+    try {
+      final res = await _apiClient.postJson(
+        ApiEndpoints.wishlistSync,
+        {'product_ids': productIds},
+      );
+      final parsed = _parseProductList(res);
+      await saveWishlist(parsed);
+      return parsed;
+    } catch (e) {
+      AppLogger.w('Failed to sync wishlist on login: $e');
+      return null;
+    }
   }
 }

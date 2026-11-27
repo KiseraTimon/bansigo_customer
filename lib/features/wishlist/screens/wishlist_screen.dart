@@ -80,21 +80,25 @@ class WishlistScreen extends StatelessWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
-            itemCount: items.length,
-            separatorBuilder: (context, index) => const Divider(
-              color: Color(0xFFF1F5F9),
-              thickness: 1,
-              height: 1,
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () => provider.loadWishlist(),
+            child: ListView.separated(
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              itemCount: items.length,
+              separatorBuilder: (context, index) => const Divider(
+                color: Color(0xFFF1F5F9),
+                thickness: 1,
+                height: 1,
+              ),
+              itemBuilder: (context, index) {
+                final product = items[index];
+                return WishlistItemCard(
+                  product: product,
+                  onRemove: () => provider.remove(product.id),
+                );
+              },
             ),
-            itemBuilder: (context, index) {
-              final product = items[index];
-              return WishlistItemCard(
-                product: product,
-                onRemove: () => provider.remove(product.id),
-              );
-            },
           );
         },
       ),
