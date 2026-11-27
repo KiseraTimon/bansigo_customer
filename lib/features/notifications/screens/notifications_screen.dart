@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../models/notification_model.dart';
 import '../providers/notification_provider.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
@@ -43,6 +44,19 @@ class NotificationsScreen extends StatelessWidget {
                   color: AppColors.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          else if (notifications.any((n) => n.isRead))
+            TextButton.icon(
+              onPressed: () => notificationProvider.clearReadNotifications(),
+              icon: const Icon(Icons.delete_sweep_outlined, size: 16, color: AppColors.textSecondary),
+              label: const Text(
+                'Clear Read',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -121,16 +135,23 @@ class NotificationsScreen extends StatelessWidget {
     NotificationModel item,
     NotificationProvider provider,
   ) {
-    return InkWell(
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppColors.error.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+      ),
+      onDismissed: (_) => provider.deleteNotification(item.id),
+      child: InkWell(
       onTap: () {
         provider.markAsRead(item.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(item.title),
-            duration: const Duration(milliseconds: 900),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AppToast.show(context, item.title, type: AppToastType.info, duration: const Duration(milliseconds: 900));
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -216,6 +237,7 @@ class NotificationsScreen extends StatelessWidget {
             ],
           ],
         ),
+      ),
       ),
     );
   }

@@ -1,14 +1,73 @@
 // lib/features/notifications/services/notification_service.dart
 
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/config/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/utils/app_logger.dart';
 import '../models/notification_model.dart';
 
 class NotificationService {
+  static const _prefsKey = 'cached_customer_notifications';
   final ApiClient _apiClient;
+  final LocalStorage? _storage;
 
-  NotificationService(this._apiClient);
+  NotificationService(this._apiClient, {LocalStorage? storage}) : _storage = storage;
+
+  Future<List<NotificationModel>> getCachedNotifications({String? filterType}) async {
+    try {
+      String? raw;
+      if (_storage != null) {
+        raw = _storage.getCachedNotificationsJson();
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        raw = prefs.getString(_prefsKey);
+      }
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        var list = decoded
+            .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        if (filterType != null && filterType != 'all') {
+          list = list.where((n) => n.type == filterType).toList();
+        }
+        return list;
+      }
+    } catch (e) {
+      AppLogger.w('Failed to read cached notifications: $e');
+    }
+    if (filterType != null && filterType != 'all') {
+      return defaultNotifications.where((n) => n.type == filterType).toList();
+    }
+    return List.from(defaultNotifications);
+  }
+
+  Future<void> saveCachedNotifications(List<NotificationModel> items) async {
+    try {
+      final encoded = jsonEncode(items.map((e) => e.toJson()).toList());
+      if (_storage != null) {
+        await _storage.saveCachedNotificationsJson(encoded);
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_prefsKey, encoded);
+      }
+    } catch (e) {
+      AppLogger.w('Failed to persist cached notifications: $e');
+    }
+  }
+
+  Future<void> clearCache() async {
+    try {
+      if (_storage != null) {
+        await _storage.clearCachedNotifications();
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_prefsKey);
+      }
+    } catch (_) {}
+  }
 
   Future<List<NotificationModel>> getNotifications({String? filterType}) async {
     try {
@@ -24,12 +83,15 @@ class NotificationService {
         final list = rawItems
             .map((item) => NotificationModel.fromJson(item as Map<String, dynamic>))
             .toList();
+        if (filterType == null || filterType == 'all') {
+          await saveCachedNotifications(list);
+        }
         return list;
       }
     } catch (e) {
       AppLogger.w('Could not fetch notifications from server: $e');
     }
-    return defaultNotifications;
+    return getCachedNotifications(filterType: filterType);
   }
 
   Future<bool> markAsRead(String id) async {
@@ -48,6 +110,26 @@ class NotificationService {
       return true;
     } catch (e) {
       AppLogger.w('Could not mark all notifications as read: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteNotification(String id) async {
+    try {
+      await _apiClient.delete(ApiEndpoints.notificationDelete(id));
+      return true;
+    } catch (e) {
+      AppLogger.w('Could not delete notification: $e');
+      return false;
+    }
+  }
+
+  Future<bool> clearReadNotifications() async {
+    try {
+      await _apiClient.delete(ApiEndpoints.notificationsClearRead);
+      return true;
+    } catch (e) {
+      AppLogger.w('Could not clear read notifications: $e');
       return false;
     }
   }

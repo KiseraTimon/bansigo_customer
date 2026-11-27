@@ -36,6 +36,19 @@ class NotificationModel {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'message': message,
+      'type': type,
+      'created_at': createdAt,
+      'is_read': isRead,
+      'action_type': actionType,
+      'action_payload': actionPayload,
+    };
+  }
+
   IconData get icon {
     switch (type) {
       case 'order':

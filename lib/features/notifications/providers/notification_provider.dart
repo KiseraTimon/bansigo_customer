@@ -12,7 +12,7 @@ class NotificationProvider with ChangeNotifier {
   String _activeFilter = 'all';
 
   NotificationProvider(this._service) {
-    loadNotifications();
+    _initAndLoad();
   }
 
   List<NotificationModel> get notifications => _notifications;
@@ -20,6 +20,12 @@ class NotificationProvider with ChangeNotifier {
   String get activeFilter => _activeFilter;
 
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
+
+  Future<void> _initAndLoad() async {
+    _notifications = await _service.getCachedNotifications(filterType: _activeFilter);
+    notifyListeners();
+    await loadNotifications();
+  }
 
   Future<void> loadNotifications({String? filterType}) async {
     _isLoading = true;
@@ -30,7 +36,7 @@ class NotificationProvider with ChangeNotifier {
       final items = await _service.getNotifications(filterType: _activeFilter);
       _notifications = items;
     } catch (_) {
-      // Fallbacks kept
+      // Cached/fallback notifications kept
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -42,6 +48,9 @@ class NotificationProvider with ChangeNotifier {
     if (index != -1 && !_notifications[index].isRead) {
       _notifications[index] = _notifications[index].copyWith(isRead: true);
       notifyListeners();
+      if (_activeFilter == 'all') {
+        await _service.saveCachedNotifications(_notifications);
+      }
       await _service.markAsRead(id);
     }
   }
@@ -49,7 +58,35 @@ class NotificationProvider with ChangeNotifier {
   Future<void> markAllAsRead() async {
     _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
     notifyListeners();
+    if (_activeFilter == 'all') {
+      await _service.saveCachedNotifications(_notifications);
+    }
     await _service.markAllAsRead();
+  }
+
+  Future<void> deleteNotification(String id) async {
+    _notifications.removeWhere((n) => n.id == id);
+    notifyListeners();
+    if (_activeFilter == 'all') {
+      await _service.saveCachedNotifications(_notifications);
+    }
+    await _service.deleteNotification(id);
+  }
+
+  Future<void> clearReadNotifications() async {
+    _notifications.removeWhere((n) => n.isRead);
+    notifyListeners();
+    if (_activeFilter == 'all') {
+      await _service.saveCachedNotifications(_notifications);
+    }
+    await _service.clearReadNotifications();
+  }
+
+  Future<void> resetOnLogout() async {
+    await _service.clearCache();
+    _notifications = List.from(NotificationService.defaultNotifications);
+    _activeFilter = 'all';
+    notifyListeners();
   }
 
   void setFilter(String filter) {
