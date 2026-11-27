@@ -122,43 +122,50 @@ class AddressProvider extends ChangeNotifier {
     return '⚠️ Out of coverage • Set delivery location';
   }
 
-  /// Load addresses, zones, device GPS, and compute coverage
+  /// Load addresses and zones immediately, then enrich with GPS & coverage in the background
   Future<void> loadData() async {
     final currentEpoch = ++_loadEpoch;
-    _isLoading = true;
     _error = null;
+
+    // Hydrate from persisted cache immediately so UI has addresses on first frame
+    if (_addresses.isEmpty) {
+      final cached = _addressService.getCachedAddresses();
+      if (cached != null && cached.isNotEmpty) {
+        _addresses = cached;
+        _selectedAddress ??= _addresses.firstWhere(
+          (a) => a.isDefault,
+          orElse: () => _addresses.first,
+        );
+      }
+    }
+
+    _isLoading = true;
     notifyListeners();
 
     try {
       final results = await Future.wait([
         _addressService.getAddresses(),
         _addressService.getDeliveryZones(),
-        _addressService.getCurrentDevicePosition(),
       ]);
 
       if (currentEpoch != _loadEpoch) return;
 
       _addresses = results[0] as List<AddressModel>;
       _zones = results[1] as List<DeliveryZoneModel>;
-      _devicePosition = results[2] as Position?;
-
-      if (_devicePosition != null) {
-        _resolveGpsLocationName(_devicePosition!);
-      }
 
       if (_addresses.isNotEmpty) {
+        final previousId = _selectedAddress?.id;
         _selectedAddress = _addresses.firstWhere(
-          (a) => a.isDefault,
-          orElse: () => _addresses.first,
+          (a) => previousId != null && a.id == previousId,
+          orElse: () => _addresses.firstWhere(
+            (a) => a.isDefault,
+            orElse: () => _addresses.first,
+          ),
         );
       } else {
         // No saved addresses for this user (e.g. brand new user registration)
         // Reset selected address so location strictly borrows from live GPS
         _selectedAddress = null;
-      }
-
-      if (_selectedAddress != null) {
-        await _checkCoverageForSelected();
       }
     } catch (e) {
       if (currentEpoch != _loadEpoch) return;
@@ -169,6 +176,27 @@ class AddressProvider extends ChangeNotifier {
         _isLoading = false;
         notifyListeners();
       }
+    }
+
+    if (currentEpoch != _loadEpoch) return;
+
+    // Non-blocking background enrichment: coverage check + live device GPS
+    if (_selectedAddress != null) {
+      _checkCoverageForSelected();
+    }
+    _loadDevicePositionInBackground(currentEpoch);
+  }
+
+  /// Fetch device GPS and reverse-geocode without blocking address list loading
+  Future<void> _loadDevicePositionInBackground(int epoch) async {
+    try {
+      final pos = await _addressService.getCurrentDevicePosition();
+      if (epoch != _loadEpoch || pos == null) return;
+      _devicePosition = pos;
+      notifyListeners();
+      await _resolveGpsLocationName(pos);
+    } catch (e) {
+      AppLogger.w('Background GPS refresh failed: $e');
     }
   }
 

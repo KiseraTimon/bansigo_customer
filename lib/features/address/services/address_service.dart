@@ -91,11 +91,11 @@ class AddressService {
     final clean = query.trim();
     if (clean.isEmpty) return [];
 
+    final client = http.Client();
     try {
       final uri = Uri.parse(
         'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(clean)}&format=json&countrycodes=ke&limit=6&addressdetails=1',
       );
-      final client = http.Client();
       final res = await client.get(
         uri,
         headers: {'User-Agent': 'BansiGoCustomerApp/1.0 (support@bansigo.co.ke)'},
@@ -109,17 +109,19 @@ class AddressService {
       }
     } catch (e) {
       AppLogger.w('Nominatim place search failed: $e');
+    } finally {
+      client.close();
     }
     return [];
   }
 
   /// Reverse geocode coordinates to human-readable street or area
   Future<String?> reverseGeocode(double lat, double lon) async {
+    final client = http.Client();
     try {
       final uri = Uri.parse(
         'https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lon&format=json',
       );
-      final client = http.Client();
       final res = await client.get(
         uri,
         headers: {'User-Agent': 'BansiGoCustomerApp/1.0 (support@bansigo.co.ke)'},
@@ -143,8 +145,25 @@ class AddressService {
       }
     } catch (e) {
       AppLogger.w('Reverse geocode failed: $e');
+    } finally {
+      client.close();
     }
     return null;
+  }
+
+  /// Returns cached addresses only if explicitly stored in local preferences (null otherwise)
+  List<AddressModel>? getCachedAddresses() {
+    final raw = _storage.prefs.getString(_cachedAddressesKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw) as List;
+      return decoded
+          .map((item) => AddressModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      AppLogger.e('Failed to parse cached addresses: $e');
+      return null;
+    }
   }
 
   /// Fetch saved addresses from server with offline cache fallback
@@ -332,7 +351,10 @@ class AddressService {
         AppLogger.e('Failed to parse cached addresses: $e');
       }
     }
-    return List.from(_defaultMockAddresses);
+    if (AppConfig.current.environment == AppEnvironment.testing) {
+      return List.from(_defaultMockAddresses);
+    }
+    return [];
   }
 
   void _saveToCache(List<AddressModel> list) {
