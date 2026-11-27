@@ -97,6 +97,19 @@ class CustomerOrderService {
     return null;
   }
 
+  /// Fetches live delivery tracking state, rider GPS, route waypoints, and customer handover PIN
+  Future<Map<String, dynamic>?> fetchTracking(int orderId) async {
+    try {
+      final res = await _apiClient.get(ApiEndpoints.deliveryTracking(orderId));
+      if (res is Map<String, dynamic>) {
+        return res;
+      }
+    } catch (e) {
+      AppLogger.w('Failed to fetch delivery tracking: $e');
+    }
+    return null;
+  }
+
   /// Fetches complete order detail including line items
   Future<Map<String, dynamic>?> fetchOrderDetail(int orderId) async {
     try {

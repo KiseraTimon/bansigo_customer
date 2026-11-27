@@ -9,18 +9,22 @@ class OrderCardItem extends StatelessWidget {
   final CustomerOrderModel order;
   final VoidCallback? onTap;
   final VoidCallback? onPayNow;
+  final VoidCallback? onTrack;
   final VoidCallback? onEdit;
   final VoidCallback? onAppend;
   final VoidCallback? onCancel;
+  final VoidCallback? onRate;
 
   const OrderCardItem({
     super.key,
     required this.order,
     this.onTap,
     this.onPayNow,
+    this.onTrack,
     this.onEdit,
     this.onAppend,
     this.onCancel,
+    this.onRate,
   });
 
   Color _getStatusColor(String status) {
@@ -147,6 +151,58 @@ class OrderCardItem extends StatelessWidget {
                 ),
               ],
             ),
+
+            if (!isPendingPayment &&
+                order.fulfilmentType.toLowerCase() == 'delivery' &&
+                order.status.toLowerCase() != 'cancelled' &&
+                order.status.toLowerCase() != 'completed' &&
+                onTrack != null) ...[
+              const SizedBox(height: 12),
+              const Divider(color: Color(0xFFF1F5F9), height: 1),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: onTrack,
+                  icon: const Icon(Icons.location_searching_rounded, size: 16),
+                  label: const Text('Track Rider & Handover PIN', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F2C59),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                    minimumSize: const Size(0, 38),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
+
+            if (order.status.toLowerCase() == 'completed' && onRate != null) ...[
+              const SizedBox(height: 12),
+              const Divider(color: Color(0xFFF1F5F9), height: 1),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onRate,
+                  icon: const Icon(Icons.star_rate_rounded, size: 17, color: Color(0xFFF59E0B)),
+                  label: Text(
+                    order.fulfilmentType.toLowerCase() == 'delivery'
+                        ? 'Rate Rider & Items'
+                        : 'Rate Purchased Items',
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primaryDark,
+                    side: const BorderSide(color: Color(0xFFBBF7D0)),
+                    backgroundColor: const Color(0xFFF0FDF4),
+                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                    minimumSize: const Size(0, 38),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
 
             if (isPendingPayment) ...[
               const SizedBox(height: 12),

@@ -11,6 +11,7 @@ class OrderProvider extends ChangeNotifier {
   bool _isLoading = false;
   List<CustomerOrderModel> _ongoingOrders = [];
   List<CustomerOrderModel> _historyOrders = [];
+  int _loadEpoch = 0;
 
   OrderProvider(this._service);
 
@@ -23,24 +24,36 @@ class OrderProvider extends ChangeNotifier {
     if (_activeTab != tab) {
       _activeTab = tab;
       notifyListeners();
-      loadOrders();
+      loadOrders(tab: tab);
     }
   }
 
-  Future<void> loadOrders() async {
+  Future<void> loadOrders({OrderTabType? tab}) async {
+    final targetTab = tab ?? _activeTab;
+    final epoch = ++_loadEpoch;
     _isLoading = true;
     notifyListeners();
     try {
-      final orders = await _service.fetchOrders(_activeTab);
-      if (_activeTab == OrderTabType.ongoing) {
+      final orders = await _service.fetchOrders(targetTab);
+      if (targetTab == OrderTabType.ongoing) {
         _ongoingOrders = orders;
       } else {
         _historyOrders = orders;
       }
     } finally {
-      _isLoading = false;
+      if (epoch == _loadEpoch) {
+        _isLoading = false;
+      }
       notifyListeners();
     }
+  }
+
+  void clearOnLogout() {
+    _loadEpoch++;
+    _ongoingOrders = [];
+    _historyOrders = [];
+    _isLoading = false;
+    notifyListeners();
   }
 
   CustomerOrderService get service => _service;

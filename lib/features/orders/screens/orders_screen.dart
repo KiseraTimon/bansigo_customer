@@ -10,11 +10,14 @@ import '../../cart/providers/cart_provider.dart';
 import '../../checkout/screens/checkout_screen.dart';
 import '../models/order_model.dart';
 import '../providers/order_provider.dart';
+import 'order_tracking_screen.dart';
+import '../../reviews/widgets/order_review_sheet.dart';
 import 'sections/ongoing_cart_card.dart';
 import 'sections/orders_empty_section.dart';
 import 'sections/orders_tab_header.dart';
 import 'sections/order_card_item.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class OrdersScreen extends StatefulWidget {
   final VoidCallback? onStartShopping;
 
@@ -31,6 +34,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<OrderProvider>().loadOrders();
     });
+  }
+
+  void _openOrderTracking(CustomerOrderModel order) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => OrderTrackingScreen(
+          orderId: order.id,
+          orderNumber: order.orderNumber.isNotEmpty ? order.orderNumber : 'Order #${order.id}',
+        ),
+      ),
+    );
+  }
+
+  void _handleRateOrder(CustomerOrderModel order) {
+    OrderReviewSheet.show(
+      context,
+      orderId: order.id,
+      orderNumber: order.orderNumber.isNotEmpty ? order.orderNumber : '${order.id}',
+    );
   }
 
   void _handleOrderHere() {
@@ -58,13 +80,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         onConfirmed: () {
           orderProvider.loadOrders();
           Navigator.of(dialogCtx).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Payment confirmed! Order #${order.orderNumber} is now confirmed.'),
-              backgroundColor: AppColors.primary,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          AppToast.show(context, 'Payment confirmed! Order #${order.orderNumber} is now confirmed.', type: AppToastType.success);
         },
       ),
     );
@@ -105,17 +121,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final success = await orderProvider.cancelOrder(order.id, reason: 'Cancelled by customer');
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
+      AppToast.show(context, success
                 ? 'Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id} has been cancelled.'
-                : 'Failed to cancel order. Please try again.',
-          ),
-          backgroundColor: success ? const Color(0xFF475569) : AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+                : 'Failed to cancel order. Please try again.', type: AppToastType.error);
     }
   }
 
@@ -131,13 +139,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     if (!mounted) return;
 
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not load order items for editing.'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppToast.show(context, 'Could not load order items for editing.', type: AppToastType.error);
       return;
     }
 
@@ -185,13 +187,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Loaded ${items.length} items into basket for editing.'),
-          backgroundColor: AppColors.primaryDark,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppToast.show(context, 'Loaded ${items.length} items into basket for editing.', type: AppToastType.success);
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const CheckoutScreen()),
       );
@@ -209,13 +205,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     if (!mounted) return;
 
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not load order items to append.'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppToast.show(context, 'Could not load order items to append.', type: AppToastType.error);
       return;
     }
 
@@ -224,13 +214,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       createDedicatedSession: false,
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Appended ${items.length} items from Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id} to your active cart.'),
-        backgroundColor: AppColors.primaryDark,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.show(context, 'Appended ${items.length} items from Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id} to your active cart.', type: AppToastType.success);
   }
 
   void _showOrderDetails(BuildContext context, CustomerOrderModel order) {
@@ -389,6 +373,28 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ],
                 const SizedBox(height: 6),
               ] else ...[
+                if (order.fulfilmentType.toLowerCase() == 'delivery' &&
+                    order.status.toLowerCase() != 'cancelled' &&
+                    order.status.toLowerCase() != 'completed') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _openOrderTracking(order);
+                      },
+                      icon: const Icon(Icons.location_searching_rounded, size: 18),
+                      label: const Text('Track Live & View Handover PIN', style: TextStyle(fontWeight: FontWeight.w700)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F2C59),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 SizedBox(
                   width: double.infinity,
                   height: 46,
@@ -449,7 +455,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               onTabSelected: (tab) => provider.setTab(tab),
             ),
           ),
-          body: isLoading && !hasOngoingCarts
+          body: isLoading && !hasOngoingCarts && orders.isEmpty
               ? const Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 )
@@ -508,9 +514,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 order: order,
                                 onTap: () => _showOrderDetails(context, order),
                                 onPayNow: () => _handlePayNow(order),
+                                onTrack: () => _openOrderTracking(order),
                                 onEdit: () => _handleEditOrder(order),
                                 onAppend: () => _handleAppendOrder(order),
                                 onCancel: () => _handleCancelOrder(order),
+                                onRate: () => _handleRateOrder(order),
                               ),
                             ),
                           ],
