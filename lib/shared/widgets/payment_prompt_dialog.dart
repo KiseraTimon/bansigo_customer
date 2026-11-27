@@ -14,6 +14,7 @@ class PaymentPromptDialog extends StatefulWidget {
   final CustomerOrderService orderService;
   final VoidCallback onConfirmed;
   final bool autoTriggerStk;
+  final double? amount;
 
   const PaymentPromptDialog({
     super.key,
@@ -23,6 +24,7 @@ class PaymentPromptDialog extends StatefulWidget {
     required this.orderService,
     required this.onConfirmed,
     this.autoTriggerStk = true,
+    this.amount,
   });
 
   @override
@@ -58,9 +60,18 @@ class _PaymentPromptDialogState extends State<PaymentPromptDialog> {
       final statusResp = await widget.orderService.checkPaymentStatus(widget.orderId);
       if (statusResp != null) {
         final status = statusResp['status']?.toString().toLowerCase();
-        if (status == 'completed' || status == 'successful' || status == 'paid') {
+        if (status == 'succeeded' || status == 'completed' || status == 'successful' || status == 'paid') {
           timer.cancel();
           if (mounted) widget.onConfirmed();
+        } else if (status == 'failed' || status == 'cancelled' || status == 'timeout') {
+          if (mounted) {
+            final desc = statusResp['result_description']?.toString();
+            setState(() {
+              _stkMessage = desc != null && desc.isNotEmpty
+                  ? 'Payment $status: $desc. Tap Resend Prompt or enter M-Pesa code below.'
+                  : 'Payment $status. Tap Resend Prompt or enter M-Pesa code below.';
+            });
+          }
         }
       }
     });
@@ -118,7 +129,7 @@ class _PaymentPromptDialogState extends State<PaymentPromptDialog> {
         transactionCode: code,
       );
       final status = res['status']?.toString().toLowerCase();
-      if (status == 'confirmed' || status == 'completed' || status == 'paid') {
+      if (status == 'succeeded' || status == 'confirmed' || status == 'completed' || status == 'paid') {
         _statusTimer?.cancel();
         if (mounted) widget.onConfirmed();
       } else {
@@ -175,7 +186,9 @@ class _PaymentPromptDialogState extends State<PaymentPromptDialog> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Complete payment for ${widget.orderNumber.isNotEmpty ? widget.orderNumber : "Order #${widget.orderId}"}. Enter your M-Pesa PIN on your phone.',
+                widget.amount != null
+                    ? 'Complete payment of KES ${widget.amount!.toStringAsFixed(0)} for ${widget.orderNumber.isNotEmpty ? widget.orderNumber : "Order #${widget.orderId}"}. Enter your M-Pesa PIN on your phone.'
+                    : 'Complete payment for ${widget.orderNumber.isNotEmpty ? widget.orderNumber : "Order #${widget.orderId}"}. Enter your M-Pesa PIN on your phone.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: 13,

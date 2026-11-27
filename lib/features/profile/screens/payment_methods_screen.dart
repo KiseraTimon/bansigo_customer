@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../auth/providers/auth_provider.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
 
@@ -15,15 +17,20 @@ class PaymentMethodsScreen extends StatefulWidget {
 }
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
-  final String _selectedMethod = 'mpesa';
+  String _selectedMethod = 'mpesa';
   late final TextEditingController _mpesaPhoneController;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final phone = auth.currentUser?.phone;
+    final storage = Provider.of<LocalStorage?>(context, listen: false);
+    final auth = Provider.of<AuthProvider?>(context, listen: false);
+    _selectedMethod = storage?.getDefaultPaymentMethod() ?? 'mpesa';
+    final savedPhone = storage?.getSavedMpesaPhone();
+    final phone = (savedPhone != null && savedPhone.isNotEmpty)
+        ? savedPhone
+        : auth?.currentUser?.phone;
     _mpesaPhoneController = TextEditingController(
       text: phone != null && phone.trim().isNotEmpty ? phone.trim() : '',
     );
@@ -35,19 +42,32 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     super.dispose();
   }
 
-  void _savePaymentPreference() async {
-    setState(() => _isSaving = true);
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) {
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment preferences updated successfully!'),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
+  Future<void> _savePaymentPreference() async {
+    if (_selectedMethod == 'mpesa' && _mpesaPhoneController.text.trim().isEmpty) {
+      AppToast.show(
+        context,
+        'Please enter your M-Pesa phone number.',
+        type: AppToastType.warning,
       );
-      Navigator.pop(context);
+      return;
+    }
+    setState(() => _isSaving = true);
+    try {
+      final storage = Provider.of<LocalStorage?>(context, listen: false);
+      if (storage != null) {
+        await storage.setDefaultPaymentMethod(_selectedMethod);
+        await storage.setSavedMpesaPhone(_mpesaPhoneController.text.trim());
+      }
+      if (mounted) {
+        AppToast.show(
+          context,
+          'Payment preference saved (${_selectedMethod == 'cash' ? 'Cash on Delivery' : 'M-Pesa Express'}).',
+          type: AppToastType.success,
+        );
+        Navigator.pop(context);
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -125,17 +145,16 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               ),
               const SizedBox(height: 14),
 
-              // 2. Cash on Delivery Option (Disabled with Coming Soon badge)
+              // 2. Cash on Delivery Option (Active - supported on backend)
               _buildPaymentCard(
-                id: 'cod',
+                id: 'cash',
                 title: 'Cash on Delivery',
-                subtitle: 'Pay cash or M-Pesa directly to the courier rider upon delivery',
+                subtitle: 'Pay cash directly to the courier rider upon delivery',
                 icon: Icons.payments_outlined,
-                iconColor: const Color(0xFF94A3B8),
-                iconBgColor: const Color(0xFFF1F5F9),
-                trailingBadge: 'COMING SOON',
-                isComingSoon: true,
-                isEnabled: false,
+                iconColor: const Color(0xFF0284C7),
+                iconBgColor: const Color(0xFFE0F2FE),
+                trailingBadge: 'PAY ON DELIVERY',
+                isEnabled: true,
               ),
               const SizedBox(height: 14),
 
@@ -184,7 +203,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       child: InkWell(
         onTap: isEnabled
             ? () {
-                // Keep selected
+                setState(() => _selectedMethod = id);
               }
             : null,
         borderRadius: BorderRadius.circular(18),

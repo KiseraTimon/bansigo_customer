@@ -13,6 +13,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/address_model.dart';
 import '../providers/address_provider.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class MapLocationPickerScreen extends StatefulWidget {
   final AddressModel? addressToEdit;
 
@@ -219,12 +220,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
       _mapController.move(target, 16.0);
       _debounceReverseGeocode();
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not fetch GPS. Please ensure location services are enabled.'),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
+      AppToast.show(context, 'Could not fetch GPS. Please ensure location services are enabled.', type: AppToastType.error);
     }
   }
 
@@ -235,24 +231,14 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
 
     final nameText = _recipientNameController.text.trim();
     if (nameText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter recipient name'),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
+      AppToast.show(context, 'Please enter recipient name', type: AppToastType.error);
       return;
     }
 
     final phoneRaw = _recipientPhoneController.text.trim();
     final normPhone = Validators.normalisePhone(phoneRaw);
     if (normPhone == null || normPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid Kenyan phone number (e.g. 0712345678)'),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
+      AppToast.show(context, 'Please enter a valid Kenyan phone number (e.g. 0712345678)', type: AppToastType.error);
       return;
     }
 
@@ -297,25 +283,12 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
     setState(() => _isSaving = false);
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isEditing
+      AppToast.show(context, isEditing
                 ? 'Address updated in database successfully!'
-                : 'New delivery address saved to database!',
-          ),
-          backgroundColor: AppColors.primaryDark,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+                : 'New delivery address saved to database!', type: AppToastType.success, duration: const Duration(seconds: 2));
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save location to server. Please try again.'),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
+      AppToast.show(context, 'Failed to save location to server. Please try again.', type: AppToastType.error);
     }
   }
 

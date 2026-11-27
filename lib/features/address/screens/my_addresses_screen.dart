@@ -10,6 +10,7 @@ import '../providers/address_provider.dart';
 import 'map_location_picker_screen.dart';
 import 'sections/my_address_card.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class MyAddressesScreen extends StatefulWidget {
   const MyAddressesScreen({super.key});
 
@@ -67,13 +68,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
               Navigator.of(dialogCtx).pop();
               final ok = await context.read<AddressProvider>().deleteAddress(address.id);
               if (ok && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Deleted "${address.label}"'),
-                    backgroundColor: const Color(0xFFDC2626),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                AppToast.show(context, 'Deleted "${address.label}"', type: AppToastType.error, duration: const Duration(seconds: 2));
               }
             },
             style: ElevatedButton.styleFrom(
@@ -215,14 +210,8 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                   isSelected: isCurrent,
                   onSelect: () {
                     provider.selectAddress(addr);
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Active delivery set to "${addr.label}"'),
-                        backgroundColor: AppColors.primaryDark,
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                    AppToast.dismiss();
+                    AppToast.show(context, 'Active delivery set to "${addr.label}"', type: AppToastType.success, duration: const Duration(seconds: 1));
                   },
                   onEdit: () => _navigateToEditAddress(context, addr),
                   onDelete: () => _confirmDeleteAddress(context, addr),
