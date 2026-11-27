@@ -160,8 +160,8 @@ void main() {
 
     // Verify Title & Profile info
     expect(find.text('More'), findsOneWidget);
-    expect(find.text('Tommy Omolo'), findsOneWidget);
-    expect(find.text('07XXXXXX24'), findsOneWidget);
+    expect(find.text('BansiGo Shopper'), findsOneWidget);
+    expect(find.text('Sign in to sync orders & addresses'), findsOneWidget);
 
     // Verify exact 6 requested fields
     expect(find.text('Edit Profile'), findsOneWidget);

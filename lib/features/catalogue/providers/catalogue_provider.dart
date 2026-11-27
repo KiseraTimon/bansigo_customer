@@ -77,8 +77,12 @@ class CatalogueProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _categories = await _service.getCategories();
-      _allProducts = await _service.getProducts(perPage: 60);
+      final results = await Future.wait([
+        _service.getCategories(),
+        _service.getProducts(perPage: 60),
+      ]);
+      _categories = results[0] as List<CategoryModel>;
+      _allProducts = results[1] as List<ProductModel>;
 
       _partitionProducts();
     } catch (_) {

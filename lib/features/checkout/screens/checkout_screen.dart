@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exceptions.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
@@ -23,6 +24,7 @@ import '../../cart/providers/cart_provider.dart';
 import '../../orders/providers/order_provider.dart';
 import '../../orders/services/order_service.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -37,15 +39,56 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   bool _isPlacingOrder = false;
   String? _errorMessage;
+  String _selectedPaymentMethod = 'mpesa';
+  double _deliveryFee = 50.0;
+  int? _estimatedMinutes;
+  double? _estimatedDistanceKm;
+  String? _lastEstimatedAddressKey;
 
   @override
   void initState() {
     super.initState();
+    final storage = Provider.of<LocalStorage?>(context, listen: false);
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final userPhone = auth.currentUser?.phone;
+    _selectedPaymentMethod = storage?.getDefaultPaymentMethod() ?? 'mpesa';
+    final savedPhone = storage?.getSavedMpesaPhone();
+    final userPhone = (savedPhone != null && savedPhone.isNotEmpty)
+        ? savedPhone
+        : auth.currentUser?.phone;
     if (userPhone != null && userPhone.isNotEmpty) {
       _phoneController.text = userPhone;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshDeliveryEstimate());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshDeliveryEstimate();
+  }
+
+  Future<void> _refreshDeliveryEstimate() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
+    final addr = addressProvider.selectedAddress;
+    if (addr == null) return;
+    final key = '${addr.id}_${addr.latitude}_${addr.longitude}';
+    if (key == _lastEstimatedAddressKey) return;
+    _lastEstimatedAddressKey = key;
+
+    final estimate = await addressProvider.service.getDeliveryEstimate(
+      addr.latitude,
+      addr.longitude,
+      addr.createdAt != null && addr.id > 0 ? addr.id : null,
+    );
+    if (!mounted) return;
+    final fee = double.tryParse(estimate['delivery_fee']?.toString() ?? '');
+    final distM = (estimate['distance_m'] as num?)?.toDouble();
+    final mins = (estimate['estimated_minutes'] as num?)?.toInt();
+    setState(() {
+      if (fee != null) _deliveryFee = fee;
+      _estimatedDistanceKm = distM != null ? distM / 1000.0 : null;
+      _estimatedMinutes = mins;
+    });
   }
 
   @override
@@ -59,20 +102,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _handleProceedToPay() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (!auth.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please sign in to place your order'),
-          backgroundColor: AppColors.error,
-          action: SnackBarAction(
-            label: 'Sign In',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
-              );
-            },
-          ),
-        ),
+      AppToast.show(
+        context,
+        'Please sign in to place your order',
+        type: AppToastType.error,
+        actionLabel: 'Sign In',
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
+          );
+        },
       );
       return;
     }
@@ -84,46 +123,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final cart = Provider.of<CartProvider>(context, listen: false);
     if (cart.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your basket is empty!'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, 'Your basket is empty!', type: AppToastType.error);
       return;
     }
 
     final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     final selectedAddress = addressProvider.selectedAddress;
     if (selectedAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select or add a delivery address first'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, 'Please select or add a delivery address first', type: AppToastType.error);
       return;
     }
 
     final rawPhone = _phoneController.text.trim();
     if (rawPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter an M-Pesa phone number'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, 'Please enter an M-Pesa phone number', type: AppToastType.error);
       return;
     }
 
     final normPhone = Validators.normalisePhone(rawPhone);
     if (normPhone == null || normPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid Kenyan phone number (e.g. 0712345678)'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, 'Please enter a valid Kenyan phone number (e.g. 0712345678)', type: AppToastType.error);
       return;
     }
 
@@ -146,7 +165,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }).toList();
 
       int finalAddressId = selectedAddress.id;
-      if (finalAddressId <= 0) {
+      if (finalAddressId <= 0 || selectedAddress.createdAt == null) {
         try {
           final created = await addressProvider.service.createAddress(selectedAddress);
           finalAddressId = created.id;
@@ -160,14 +179,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         addressId: finalAddressId,
         customerNote: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
         fulfilmentType: 'delivery',
-        paymentMethod: 'mpesa',
+        paymentMethod: _selectedPaymentMethod,
       );
 
       final orderId = (orderResult['id'] as num?)?.toInt();
       final orderNumber = orderResult['order_number']?.toString() ?? 'Order #$orderId';
+      final serverTotal = double.tryParse(orderResult['total']?.toString() ?? '');
 
       if (orderId == null) {
         throw ApiException('Failed to create order on server.');
+      }
+
+      if (_selectedPaymentMethod == 'cash') {
+        cart.checkoutCompleted();
+        if (mounted) {
+          Provider.of<OrderProvider>(context, listen: false).loadOrders();
+          setState(() => _isPlacingOrder = false);
+          Navigator.of(context).pop();
+          AppToast.show(
+            context,
+            'Order $orderNumber confirmed! Pay cash to your rider on delivery.',
+            type: AppToastType.success,
+          );
+        }
+        return;
       }
 
       // 3. Initiate M-Pesa STK Push
@@ -183,6 +218,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           orderNumber: orderNumber,
           phone: normPhone,
           orderService: orderService,
+          amount: serverTotal,
+        );
+      }
+    } on UnauthorizedException {
+      if (mounted) {
+        setState(() => _isPlacingOrder = false);
+        AppToast.show(
+          context,
+          'Your session expired. Please sign in to place your order.',
+          type: AppToastType.error,
+          actionLabel: 'Sign In',
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
+            );
+          },
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
         );
       }
     } catch (e) {
@@ -191,13 +245,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _isPlacingOrder = false;
           _errorMessage = e.toString().replaceAll('Exception:', '').trim();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage ?? 'Failed to place order. Please try again.'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AppToast.show(context, _errorMessage ?? 'Failed to place order. Please try again.', type: AppToastType.error);
       }
     }
   }
@@ -254,6 +302,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required String orderNumber,
     required String phone,
     required CustomerOrderService orderService,
+    double? amount,
   }) {
     showDialog(
       context: context,
@@ -263,6 +312,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         orderNumber: orderNumber,
         phone: phone,
         orderService: orderService,
+        amount: amount,
         onConfirmed: () {
           final cart = Provider.of<CartProvider>(context, listen: false);
           cart.checkoutCompleted();
@@ -270,13 +320,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           orderProvider.loadOrders();
           Navigator.of(dialogCtx).pop(); // dismiss modal
           Navigator.of(context).pop(); // dismiss checkout screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Payment confirmed! Order $orderNumber has been placed.'),
-              backgroundColor: AppColors.primary,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          AppToast.show(context, 'Payment confirmed! Order $orderNumber has been placed.', type: AppToastType.success);
         },
       ),
     );
@@ -288,8 +332,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final addressProvider = Provider.of<AddressProvider>(context);
     final selectedAddress = addressProvider.selectedAddress;
 
-    const deliveryFee = 50.0;
-    final totalPayable = cart.subtotal + deliveryFee;
+    final deliveryFee = _deliveryFee;
+    final totalPayable = (cart.subtotal + deliveryFee).ceilToDouble();
 
     return ScreenTemplate(
       isScrollable: true,
@@ -650,7 +694,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       children: [
                         _buildBillRow('Items Subtotal', cart.formattedSubtotal),
                         const SizedBox(height: 8),
-                        _buildBillRow('Delivery Fee', 'KES ${deliveryFee.toStringAsFixed(2)}'),
+                        _buildBillRow(
+                          _estimatedDistanceKm != null
+                              ? 'Delivery Fee (${_estimatedDistanceKm!.toStringAsFixed(1)} km${_estimatedMinutes != null ? " • ~$_estimatedMinutes min" : ""})'
+                              : 'Delivery Fee',
+                          'KES ${deliveryFee.toStringAsFixed(2)}',
+                        ),
                         const Divider(height: 20, thickness: 1, color: Color(0xFFF1F5F9)),
                         _buildBillRow(
                           'Total Payable',

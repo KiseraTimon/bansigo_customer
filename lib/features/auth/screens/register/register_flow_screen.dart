@@ -16,6 +16,7 @@ import '../../../home/screens/home_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../verification/email_verification_screen.dart';
 
+import '../../../../shared/widgets/app_toast.dart';
 class RegisterFlowScreen extends StatefulWidget {
   const RegisterFlowScreen({super.key});
 
@@ -118,12 +119,7 @@ class _RegisterFlowScreenState extends State<RegisterFlowScreen> {
         );
       }
     } else if (result.errorMessage != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.errorMessage!),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppToast.show(context, result.errorMessage!, type: AppToastType.error);
     }
   }
 

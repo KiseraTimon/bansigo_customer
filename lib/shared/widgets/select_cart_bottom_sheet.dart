@@ -9,6 +9,7 @@ import '../../features/cart/providers/cart_provider.dart';
 import '../../features/home/models/product_model.dart';
 import 'product_image_widget.dart';
 
+import 'app_toast.dart';
 class SelectCartBottomSheet extends StatelessWidget {
   final ProductModel product;
   final int quantity;
@@ -30,14 +31,7 @@ class SelectCartBottomSheet extends StatelessWidget {
     // If no carts currently have items, add directly to default active cart
     if (cart.activeSessionsWithItems.isEmpty) {
       cart.addItem(product, quantity: quantity);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Added "${product.name}" to Bag (${cart.activeSessionName})'),
-          backgroundColor: AppColors.primary,
-          duration: const Duration(milliseconds: 1600),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppToast.show(context, 'Added "${product.name}" to Bag (${cart.activeSessionName})', type: AppToastType.success, duration: const Duration(milliseconds: 1600));
       return;
     }
 
@@ -58,14 +52,7 @@ class SelectCartBottomSheet extends StatelessWidget {
     cart.addItemToSession(session.id, product, quantity: quantity);
     Navigator.of(context).pop();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added "${product.name}" to ${session.name}'),
-        backgroundColor: AppColors.primary,
-        duration: const Duration(milliseconds: 1800),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.show(context, 'Added "${product.name}" to ${session.name}', type: AppToastType.success, duration: const Duration(milliseconds: 1800));
   }
 
   void _createNewCart(BuildContext context) {
@@ -74,14 +61,7 @@ class SelectCartBottomSheet extends StatelessWidget {
     cart.addItemToSession(newSession.id, product, quantity: quantity);
     Navigator.of(context).pop();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Started ${newSession.name} & added "${product.name}"'),
-        backgroundColor: AppColors.primary,
-        duration: const Duration(milliseconds: 1800),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.show(context, 'Started ${newSession.name} & added "${product.name}"', type: AppToastType.success, duration: const Duration(milliseconds: 1800));
   }
 
   @override

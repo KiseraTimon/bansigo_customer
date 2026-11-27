@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class ContactUsScreen extends StatelessWidget {
   const ContactUsScreen({super.key});
 
@@ -80,12 +81,7 @@ class ContactUsScreen extends StatelessWidget {
               icon: Icons.chat_bubble_outline_rounded,
               iconColor: const Color(0xFF16A34A),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Starting live support chat with BansiGo Concierge...'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                AppToast.show(context, 'Starting live support chat with BansiGo Concierge...', type: AppToastType.info);
               },
             ),
             const SizedBox(height: 12),
@@ -97,12 +93,7 @@ class ContactUsScreen extends StatelessWidget {
               icon: Icons.phone_outlined,
               iconColor: const Color(0xFFEA580C),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Dialing BansiGo Customer Support: +254 700 000 000'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                AppToast.show(context, 'Dialing BansiGo Customer Support: +254 700 000 000', type: AppToastType.info);
               },
             ),
             const SizedBox(height: 12),
@@ -114,12 +105,7 @@ class ContactUsScreen extends StatelessWidget {
               icon: Icons.mail_outline_rounded,
               iconColor: const Color(0xFF0284C7),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Opening mail to support@bansigo.store'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                AppToast.show(context, 'Opening mail to support@bansigo.store', type: AppToastType.info);
               },
             ),
             const SizedBox(height: 12),
@@ -131,12 +117,7 @@ class ContactUsScreen extends StatelessWidget {
               icon: Icons.facebook_rounded,
               iconColor: const Color(0xFF1877F2),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Opening Facebook page: facebook.com/BansiGoOfficial'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                AppToast.show(context, 'Opening Facebook page: facebook.com/BansiGoOfficial', type: AppToastType.info);
               },
             ),
             const SizedBox(height: 24),

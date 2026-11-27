@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import 'app_text_field.dart';
+import 'app_toast.dart';
 
 class ServerConfigDialog extends StatefulWidget {
   const ServerConfigDialog({super.key});
@@ -127,7 +128,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
                 ActionChip(
                   avatar: const Icon(Icons.wifi, size: 14, color: AppColors.primaryDark),
                   backgroundColor: AppColors.primarySubtle,
-                  label: const Text('192.168.100.10 (Wi-Fi)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                  label: const Text('192.168.100.54 (Wi-Fi)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
                   onPressed: () {
                     setState(() {
                       _urlController.text = AppConfig.defaultWifiUrl;
@@ -232,18 +233,12 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           onPressed: () async {
-            final messenger = ScaffoldMessenger.of(context);
             final nav = Navigator.of(context);
             final url = _urlController.text.trim();
             await auth.setCustomServerUrl(url);
-            if (!mounted) return;
+            if (!context.mounted) return;
+            AppToast.success(context, 'Server endpoint saved: $url');
             nav.pop();
-            messenger.showSnackBar(
-              SnackBar(
-                content: Text('Server endpoint saved: $url'),
-                backgroundColor: AppColors.primaryDark,
-              ),
-            );
           },
           child: const Text('Apply & Save'),
         ),

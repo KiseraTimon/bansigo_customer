@@ -11,6 +11,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login/login_flow_screen.dart';
 import '../../auth/screens/verification/email_verification_screen.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
@@ -53,21 +54,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (!auth.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please log in first to update your profile'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'Sign In',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
-              );
-            },
-          ),
-        ),
+      AppToast.show(
+        context,
+        'Please log in first to update your profile',
+        type: AppToastType.error,
+        actionLabel: 'Sign In',
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
+          );
+        },
       );
       return;
     }
@@ -133,13 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile updated successfully!'),
-              backgroundColor: AppColors.primary,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          AppToast.show(context, 'Profile updated successfully!', type: AppToastType.success);
           Navigator.pop(context);
         }
       } else {
@@ -149,23 +139,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             err.toLowerCase().contains('sign in') ||
             err.toLowerCase().contains('log in');
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            action: isAuthErr
-                ? SnackBarAction(
-                    label: 'Sign In',
-                    textColor: Colors.white,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
-                      );
-                    },
-                  )
-                : null,
-          ),
+        AppToast.show(
+          context,
+          err,
+          type: AppToastType.error,
+          actionLabel: isAuthErr ? 'Sign In' : null,
+          onTap: isAuthErr
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const LoginFlowScreen()),
+                  );
+                }
+              : null,
         );
       }
     }

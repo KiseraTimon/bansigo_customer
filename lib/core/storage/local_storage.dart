@@ -53,6 +53,17 @@ class LocalStorage {
   Future<void> clearUserAddressData() async {
     await _prefs.remove(_keySelectedLocation);
     await _prefs.remove('cached_customer_addresses');
+    await _prefs.remove('cached_customer_notifications');
+  }
+
+  Future<void> saveCachedNotificationsJson(String jsonString) async {
+    await _prefs.setString('cached_customer_notifications', jsonString);
+  }
+
+  String? getCachedNotificationsJson() => _prefs.getString('cached_customer_notifications');
+
+  Future<void> clearCachedNotifications() async {
+    await _prefs.remove('cached_customer_notifications');
   }
 
   // Cached User JSON
@@ -117,4 +128,21 @@ class LocalStorage {
 
   String get language => _prefs.getString(_keyLanguage) ?? 'en';
   Future<void> setLanguage(String lang) => _prefs.setString(_keyLanguage, lang);
+
+  // Payment preference persistence
+  static const String _keyDefaultPaymentMethod = 'setting_default_payment_method';
+  static const String _keySavedMpesaPhone = 'setting_saved_mpesa_phone';
+
+  String getDefaultPaymentMethod() => _prefs.getString(_keyDefaultPaymentMethod) ?? 'mpesa';
+  Future<void> setDefaultPaymentMethod(String method) =>
+      _prefs.setString(_keyDefaultPaymentMethod, method);
+
+  String? getSavedMpesaPhone() => _prefs.getString(_keySavedMpesaPhone);
+  Future<void> setSavedMpesaPhone(String phone) async {
+    if (phone.trim().isEmpty) {
+      await _prefs.remove(_keySavedMpesaPhone);
+    } else {
+      await _prefs.setString(_keySavedMpesaPhone, phone.trim());
+    }
+  }
 }

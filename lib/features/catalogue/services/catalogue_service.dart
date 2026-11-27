@@ -18,10 +18,9 @@ class CatalogueService {
       final res = await _apiClient.get(ApiEndpoints.categories);
       final List? rawList = res is List ? res : (res is Map<String, dynamic> && res['items'] is List ? res['items'] as List : null);
       if (rawList != null) {
-        final list = rawList
+        return rawList
             .map((item) => CategoryModel.fromJson(item as Map<String, dynamic>))
             .toList();
-        if (list.isNotEmpty) return list;
       }
     } catch (e) {
       AppLogger.w('Could not fetch categories from server: $e');
@@ -56,15 +55,15 @@ class CatalogueService {
           ? res['items'] as List
           : (res is List ? res : null);
       if (rawItems != null) {
-        final list = rawItems
+        return rawItems
             .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
             .toList();
-        if (list.isNotEmpty) return list;
       }
     } catch (e) {
       AppLogger.w('Could not fetch products from server: $e');
+      return _filterFallbackProducts(q: q, categoryId: categoryId, minPrice: minPrice, maxPrice: maxPrice);
     }
-    return _filterFallbackProducts(q: q, categoryId: categoryId, minPrice: minPrice, maxPrice: maxPrice);
+    return [];
   }
 
   Future<ProductModel?> getProductDetail(int id) async {
@@ -89,39 +88,15 @@ class CatalogueService {
       final res = await _apiClient.get(ApiEndpoints.relatedProducts(id));
       final List? rawList = res is List ? res : (res is Map<String, dynamic> && res['items'] is List ? res['items'] as List : null);
       if (rawList != null) {
-        final list = rawList
+        return rawList
             .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
             .toList();
-        if (list.isNotEmpty) return list;
       }
     } catch (e) {
       AppLogger.w('Could not fetch related products from server: $e');
     }
 
-    return [
-      const ProductModel(
-        id: 'rec-nido-1',
-        name: 'Nestle Nido Full Cream Milk Powder Instant',
-        unit: '400g',
-        price: 270.00,
-        originalPrice: 342.00,
-        category: 'Dairy Products',
-        description:
-            'Et quidem faciunt, ut summum bonum sit extremum et rationibus conquisitis de voluptate.',
-        illustration: MilkPowderCanIllustration(size: 72),
-      ),
-      const ProductModel(
-        id: 'rec-dano-2',
-        name: 'Nestle Nido Full Cream Milk Powder Instant',
-        unit: '1 KG',
-        price: 270.00,
-        originalPrice: 342.00,
-        category: 'Dairy Products',
-        description:
-            'Et quidem faciunt, ut summum bonum sit extremum et rationibus conquisitis de voluptate.',
-        illustration: MilkPowderPouchIllustration(size: 72),
-      ),
-    ];
+    return [];
   }
 
   List<ProductModel> _filterFallbackProducts({

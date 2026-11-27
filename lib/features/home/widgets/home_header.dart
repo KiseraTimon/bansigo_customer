@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
+import '../../../shared/widgets/app_toast.dart';
 class HomeHeader extends StatelessWidget {
   final VoidCallback? onNotificationTap;
   final bool hasUnreadNotifications;
@@ -33,9 +34,7 @@ class HomeHeader extends StatelessWidget {
           // Notification Bell
           InkWell(
             onTap: onNotificationTap ?? () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications (0 unread)')),
-              );
+              AppToast.show(context, 'Notifications (0 unread)', type: AppToastType.info);
             },
             borderRadius: BorderRadius.circular(20),
             child: Container(

@@ -1,5 +1,7 @@
 // lib/main.dart
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,7 @@ import 'core/config/app_config.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/local_storage.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_logger.dart';
 import 'features/address/providers/address_provider.dart';
 import 'features/address/services/address_service.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -37,26 +40,63 @@ Future<void> main() async {
   final storage = await LocalStorage.create();
 
   // Initialize Environment Configuration (Development by default)
+  var customApiUrl = storage.getCustomApiUrl();
+  if (customApiUrl != null &&
+      customApiUrl.trim().isNotEmpty &&
+      customApiUrl.trim() != AppConfig.defaultWifiUrl) {
+    final customReachable = await _isHostReachable(customApiUrl);
+    if (!customReachable && await _isHostReachable(AppConfig.defaultWifiUrl)) {
+      AppLogger.w(
+        'Saved server URL ($customApiUrl) is unreachable; switching to ${AppConfig.defaultWifiUrl}',
+      );
+      await storage.setCustomApiUrl(null);
+      customApiUrl = null;
+    }
+  }
+
   AppConfig.initialize(
     env: AppEnvironment.development,
-    customApiUrl: storage.getCustomApiUrl(),
+    customApiUrl: customApiUrl,
   );
 
   final apiClient = ApiClient(storage: storage);
   final authService = AuthService(apiClient: apiClient, storage: storage);
   final addressService = AddressService(apiClient: apiClient, storage: storage);
-  final wishlistService = WishlistService(storage);
+  final wishlistService = WishlistService(storage, apiClient: apiClient);
   final customerOrderService = CustomerOrderService(apiClient);
   final catalogueService = CatalogueService(apiClient);
-  final notificationService = NotificationService(apiClient);
+  final notificationService = NotificationService(apiClient, storage: storage);
   final recommendationService = RecommendationService(apiClient);
 
   final authProvider = AuthProvider(authService);
   final addressProvider = AddressProvider(addressService: addressService);
+  final wishlistProvider = WishlistProvider(wishlistService);
+  final orderProvider = OrderProvider(customerOrderService);
+  final notificationProvider = NotificationProvider(notificationService);
 
-  // Address reset on logout to prevent address leaks, and user addresses sync on login/register
-  authProvider.onLogoutCallback = () async => await addressProvider.resetOnLogout();
-  authProvider.onAuthSuccessCallback = () async => await addressProvider.loadData();
+  apiClient.onUnauthorized = () {
+    authProvider.handleSessionExpired();
+  };
+
+  if (authService.isAuthenticated) {
+    authProvider.validateSession();
+    orderProvider.loadOrders();
+    wishlistProvider.loadWishlist();
+  }
+
+  // Address, order, wishlist & notification reset on logout to prevent leaks, and sync on login/register
+  authProvider.onLogoutCallback = () async {
+    orderProvider.clearOnLogout();
+    await wishlistProvider.clearOnLogout();
+    await notificationProvider.resetOnLogout();
+    await addressProvider.resetOnLogout();
+  };
+  authProvider.onAuthSuccessCallback = () async {
+    orderProvider.loadOrders();
+    await wishlistProvider.syncOnLogin();
+    await notificationProvider.loadNotifications();
+    await addressProvider.loadData();
+  };
 
   runApp(
     MultiProvider(
@@ -65,17 +105,15 @@ Future<void> main() async {
         Provider.value(value: storage),
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider.value(value: addressProvider),
-        ChangeNotifierProvider(
-          create: (_) => WishlistProvider(wishlistService),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => OrderProvider(customerOrderService),
+        ChangeNotifierProvider.value(value: wishlistProvider),
+        ChangeNotifierProvider.value(
+          value: orderProvider,
         ),
         ChangeNotifierProvider(
           create: (_) => CatalogueProvider(catalogueService),
         ),
-        ChangeNotifierProvider(
-          create: (_) => NotificationProvider(notificationService),
+        ChangeNotifierProvider.value(
+          value: notificationProvider,
         ),
         ChangeNotifierProvider(
           create: (_) => RecommendationProvider(recommendationService),
@@ -89,6 +127,23 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+Future<bool> _isHostReachable(String baseUrl) async {
+  try {
+    final uri = Uri.parse(baseUrl.trim());
+    if (uri.host.isEmpty) return false;
+    final port = uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80);
+    final socket = await Socket.connect(
+      uri.host,
+      port,
+      timeout: const Duration(milliseconds: 1200),
+    );
+    socket.destroy();
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 class BansiGoApp extends StatefulWidget {
